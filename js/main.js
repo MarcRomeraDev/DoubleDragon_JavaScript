@@ -11,9 +11,9 @@ var gamePrefs=
 var config=
 {
     type: Phaser.AUTO,
-    width:128,
-    height:256,
-    scene:[menu,gameState], //array con los niveles
+    width:248,
+    height:192,
+    scene:[gameState], //array con los niveles
     render:{
         pixelArt:true
     },
@@ -30,4 +30,3 @@ var config=
     }
 }
 var juego = new Phaser.Game(config);
-
