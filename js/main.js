@@ -1,13 +1,11 @@
 var gamePrefs=
 {
-    speedNave:2,
-    speedBullet:-100,
-    speedEnemy:20,
-    BULLET_ENEMY_SPEED:100,
-    POWER_UP_SPEED:20,
-    puntos:0
+    playerSpeed: 20
 }
-
+var sceneVars =
+{
+    canMove: false
+}
 var config=
 {
     type: Phaser.AUTO,
