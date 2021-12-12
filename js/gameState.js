@@ -29,35 +29,39 @@ class gameState extends Phaser.Scene {
         this.flipFlop = false;
         this.numMapSubdivisions = 1015 / config.width;
         this.count = this.numMapSubdivisions / 4;
+        this.canAdvance = false;
     }
 
     update() {
         this.physics.world.on('worldbounds', (body, up, down, left, right) => {
         });
 
-        if (this.bg1.tilePositionX < 1015 - (config.width * this.numMapSubdivisions)) {
-            this.bg1.tilePositionX += 1;
-        }
-        else {
-            if (this.input.space.isDown) {
-                if (!this.flipFlop) {
-                    this.numMapSubdivisions -= this.count;
-                    this.flipFlop = true;
-                }
+        //INPUT TO ACTIVATE FLAG TO SCROLL BACKGROUND
+        if (this.input.space.isDown) {
+            if (!this.flipFlop) {
+                this.numMapSubdivisions -= this.count;
+                this.flipFlop = true;
+                this.canAdvance = true;
             }
-        }
-
-        if (this.input.space.isUp) {
-            this.flipFlop = false;
         }
 
         if (this.input.left.isDown) {
             this.player.body.velocity.x -= 5
             this.player.flipX = true;
         } else if (this.input.right.isDown) {
+            if (this.canAdvance && (this.bg1.tilePositionX < 1015 - (config.width * this.numMapSubdivisions))) {
+                if (this.player.body.x > config.width / 2)
+                    this.bg1.tilePositionX += .5; //--> Background scroll speed
+
+            }
+            else {
+                this.canAdvance = false;
+                this.flipFlop = false;
+            }
+
+            //Player speed
             this.player.body.velocity.x += 5
             this.player.flipX = false;
-        } else {
         }
     }
 }
