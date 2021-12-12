@@ -1,13 +1,12 @@
 class character extends Phaser.GameObjects.Sprite {
     constructor(_scene,_posX,_posY,_tag)
     {
-        super(_scene,_posX,_posY,_tag);
+        super(_scene,_posX,_posY,_tag);        
         
-        
-        this.scene = _scene;
         _scene.add.existing(this);
+        this.scene = _scene;
         
-        this.sprite = _scene.physics.add.sprite(_scene,_posX, _posY, 'player').setOrigin(.5);
+        //this.sprite = _scene.physics.add.sprite(_scene,_posX, _posY, 'player').setOrigin(.5);
        
       //  _scene.physics.world.enable(this);
 

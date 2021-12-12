@@ -9,22 +9,27 @@ class gameState extends Phaser.Scene {
     }
 
     preload() { //carga los assets en memoria
-
         this.cameras.main.setBackgroundColor("#000000");
-        var rutaImg = 'assets/img/';
-        var rutaSprites = 'assets/sprites/';
-        this.load.image('background1', rutaSprites + 'Mission1BackgroundSprites/1.png');
-        this.load.spritesheet('player', rutaSprites + 'BillySprites/character.png', { frameWidth: 72, frameHeight: 46 });
-
-
+        this.load.setPath("assets/sprites/");
+        this.load.image('background1', 'Mission1BackgroundSprites/1.png');
+        this.load.spritesheet('player', 'BillySprites/character.png', { frameWidth: 72, frameHeight: 46 });
+        this.load.spritesheet('healthUI', 'HUD/health.png', { frameWidth: 128, frameHeight: 28 });
     }
 
     create() { //carga los assets en pantalla desde memoria
-        this.bg1 = this.add.tileSprite(0, 0, 1015, 192, 'background1').setOrigin(0);
+        this.healthKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.H);
+        this.bg1 = this.add.tileSprite(0, 0, 1015, config.height, 'background1').setOrigin(0);
         this.player = this.physics.add.sprite(config.width / 2, config.height * .7, 'player').setOrigin(.5);
+        this.player.body.setSize(16, 37, true).setOffset(30, 10);
 
         this.player.body.collideWorldBounds = true; //--> Collision with world border walls
         this.player.body.onWorldBounds = true; //--> On collision event
+
+        this.player.health = 6;
+        this.healthUI = this.add.sprite(0, 0, 'healthUI', this.player.health).setOrigin(0, -10);
+        this.healthUI.scaleX = (.7);
+        this.healthUI.scaleY = (.6);
+        this.healthUI.setScrollFactor(0);
 
         this.input = this.input.keyboard.createCursorKeys();
 
@@ -107,6 +112,20 @@ class gameState extends Phaser.Scene {
                 this.flipFlop = true;
                 this.canAdvance = true;
             }
+        }
+
+        if (Phaser.Input.Keyboard.JustDown(this.healthKey)) {
+            this.player.health--;
+            this.healthUI.setFrame(this.player.health);
+            this.checkPlayerHealth();
+        }
+    }
+
+    checkPlayerHealth() {
+        if (this.player.health <= 0) {
+            this.player.body.reset(config.width / 10, config.height * .7);
+            this.player.health = 6;
+            this.healthUI.setFrame(this.player.health);
         }
     }
 }
