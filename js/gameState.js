@@ -23,27 +23,38 @@ class gameState extends Phaser.Scene {
     create() { //carga los assets en pantalla desde memoria
         this.bg1 = this.add.tileSprite(0, 0, 1015, 192, 'background1').setOrigin(0);
         this.player = this.physics.add.sprite(config.width / 2, config.height * .7, 'player').setOrigin(.5);
-
+ 
         this.player.body.collideWorldBounds = true; //--> Collision with world border walls
         this.player.body.onWorldBounds = true; //--> On collision event
-
-        this.input = this.input.keyboard.createCursorKeys();
-
+        this.DoOnePunch = true;
+        this.keys = this.input.keyboard.addKeys({
+            a:Phaser.Input.Keyboard.KeyCodes.A
+        });
+        this.moveKeys = this.input.keyboard.createCursorKeys();
+        this.attackFlipFlop = false;
         this.flipFlop = false;
         this.numMapSubdivisions = 1015 / config.width;
         this.count = this.numMapSubdivisions / 4;
         this.canAdvance = false;
         this.createPlayerAnims();
+       
+       // this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A, false)
+       // this.input.keyboard.on("keydown_A", (e) => {
+       //     this.attackPlayerManager();
+        //  });
+        //var combo = this.input.keyboard.createCombo()
+       //  this.keyA = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+        //this.keyB = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
 
     }
-    createPlayerAnims() {
+    createPlayerAnims() 
+    {
         this.anims.create({
             key: 'run',
             frames: this.anims.generateFrameNumbers('player', { start: 0, end: 1 }),
             frameRate: 5,
             repeat: -1
         });
-
     }
     updatePlayerHitbox() {
         if (this.player.anims.currentFrame != null) {
@@ -53,23 +64,23 @@ class gameState extends Phaser.Scene {
     }
 
     movePlayerManager() {
-        if (this.input.down.isDown) { // down
+        if (this.moveKeys.down.isDown) { // down
             this.player.body.velocity.y = gamePrefs.playerSpeed;
             //this.player.body.velocity.x = 0;
             this.player.anims.play('run', true);
         }
-        else if (this.input.up.isDown) { // up
+        else if (this.moveKeys.up.isDown) { // up
             this.player.body.velocity.y = -gamePrefs.playerSpeed;
             //this.player.body.velocity.x = 0;
             this.player.anims.play('run', true);
         }
-        else if (this.input.left.isDown) { //left
+        else if (this.moveKeys.left.isDown) { //left
             this.player.body.velocity.x = -gamePrefs.playerSpeed;
             this.player.flipX = true;
             //this.player.body.velocity.y = 0;
             this.player.anims.play('run', true);
 
-        } else if (this.input.right.isDown) { // right
+        } else if (this.moveKeys.right.isDown) { // right
             this.player.body.velocity.x = gamePrefs.playerSpeed;
             this.player.flipX = false;
             //this.player.body.velocity.y = 0;
@@ -93,17 +104,38 @@ class gameState extends Phaser.Scene {
             this.player.setFrame(0);
         }
     }
+    attackPlayerManager() {
+       if(this.keys.a.isDown)
+       {
+           if(this.DoOnePunch)
+           {
+               this.DoOnePunch= false;
+                if(this.attackFlipFlop)
+                    this.player.setFrame(26);
+                else{
+                    this.player.setFrame(37);
+                }
+            this.attackFlipFlop = !this.attackFlipFlop;   
+           }   
+       }
+       else if(this.keys.a.isUp)
+       {
+            this.DoOnePunch = true; 
+       }
+     
+    }
 
     update() {
 
         this.movePlayerManager();
         this.updatePlayerHitbox();
-
+        this.attackPlayerManager();
         this.physics.world.on('worldbounds', (body, up, down, left, right) => {
         });
+        
 
         //INPUT TO ACTIVATE FLAG TO SCROLL BACKGROUND
-        if (this.input.space.isDown) {
+        if (this.moveKeys.space.isDown) {
             if (!this.flipFlop) {
                 this.numMapSubdivisions -= this.count;
                 this.flipFlop = true;
