@@ -18,7 +18,6 @@ class gameState extends Phaser.Scene {
 
 
     }
-    //
 
     create() { //carga los assets en pantalla desde memoria
         this.bg1 = this.add.tileSprite(0, 0, 1015, 192, 'background1').setOrigin(0);
@@ -56,6 +55,7 @@ class gameState extends Phaser.Scene {
             repeat: -1
         });
     }
+
     updatePlayerHitbox() {
         if (this.player.anims.currentFrame != null) {
             this.player.body.setSize(16, 37, true).setOffset(30, 10);
@@ -64,33 +64,33 @@ class gameState extends Phaser.Scene {
     }
 
     movePlayerManager() {
-        if (this.moveKeys.down.isDown) { // down
-            this.player.body.velocity.y = gamePrefs.playerSpeed;
-            //this.player.body.velocity.x = 0;
-            this.player.anims.play('run', true);
-        }
-        else if (this.moveKeys.up.isDown) { // up
-            this.player.body.velocity.y = -gamePrefs.playerSpeed;
-            //this.player.body.velocity.x = 0;
-            this.player.anims.play('run', true);
-        }
-        else if (this.moveKeys.left.isDown) { //left
-            this.player.body.velocity.x = -gamePrefs.playerSpeed;
-            this.player.flipX = true;
-            //this.player.body.velocity.y = 0;
-            this.player.anims.play('run', true);
+        this.player.setVelocity(0, 0);
 
-        } else if (this.moveKeys.right.isDown) { // right
-            this.player.body.velocity.x = gamePrefs.playerSpeed;
+        if (this.input.down.isDown) { // down
+            this.player.setVelocityY(gamePrefs.playerSpeed);
+            this.player.play('run', true);
+        }
+        else if (this.input.up.isDown) { // up
+            if (this.player.body.y > config.height / 2 + 10) {
+                this.player.setVelocityY(-gamePrefs.playerSpeed);
+                this.player.play('run', true);
+            }
+        }
+
+        if (this.input.left.isDown) { //left
+            this.player.setVelocityX(-gamePrefs.playerSpeed);
+            this.player.play('run', true);
+            this.player.flipX = true;
+        }
+        else if (this.input.right.isDown) { // right
+            this.player.setVelocityX(gamePrefs.playerSpeed);
+            this.player.play('run', true);
             this.player.flipX = false;
-            //this.player.body.velocity.y = 0;
-            this.player.anims.play('run', true);
 
             if (this.canAdvance && (this.bg1.tilePositionX < 1015 - (config.width * this.numMapSubdivisions))) {
-                if (this.player.body.x > config.width / 2)
-                {
+                if (this.player.body.x > config.width * 2 / 3) {
                     this.bg1.tilePositionX += .3; //--> Background scroll speed
-                    this.player.body.velocity.x = 0;
+                    this.player.body.velocity.x = 0.001;
                 }
             }
             else {
@@ -98,11 +98,9 @@ class gameState extends Phaser.Scene {
                 this.flipFlop = false;
             }
         }
-        else {
-            this.player.body.velocity.x = 0;
-            this.player.body.velocity.y = 0;
+
+        if (this.player.body.velocity.x == 0 && this.player.body.velocity.y == 0)
             this.player.setFrame(0);
-        }
     }
     attackPlayerManager() {
        if(this.keys.a.isDown)
@@ -126,7 +124,6 @@ class gameState extends Phaser.Scene {
     }
 
     update() {
-
         this.movePlayerManager();
         this.updatePlayerHitbox();
         this.attackPlayerManager();
