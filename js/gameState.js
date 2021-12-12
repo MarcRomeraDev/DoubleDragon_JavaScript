@@ -7,6 +7,7 @@ class gameState extends Phaser.Scene {
             });
 
     }
+    
     preload() { //carga los assets en memoria
         this.cameras.main.setBackgroundColor("#000000");
         var rutaImg = 'assets/img/';
@@ -14,7 +15,6 @@ class gameState extends Phaser.Scene {
         this.load.image('background1', rutaSprites + 'Mission1BackgroundSprites/1.png');
         this.load.image('player', rutaSprites + 'BillySprites/0.png');
     }
-
 
     create() { //carga los assets en pantalla desde memoria
         this.bg1 = this.add.tileSprite(0, 0, 1015, 192, 'background1').setOrigin(0);
@@ -52,7 +52,6 @@ class gameState extends Phaser.Scene {
             if (this.canAdvance && (this.bg1.tilePositionX < 1015 - (config.width * this.numMapSubdivisions))) {
                 if (this.player.body.x > config.width / 2)
                     this.bg1.tilePositionX += .5; //--> Background scroll speed
-
             }
             else {
                 this.canAdvance = false;
