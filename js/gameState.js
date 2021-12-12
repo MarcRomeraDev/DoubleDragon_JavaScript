@@ -3,10 +3,11 @@ class gameState extends Phaser.Scene {
         super(
             {
                 key: "gameState"
-                
+
             });
-           
+
     }
+    
     preload() { //carga los assets en memoria
         
         this.cameras.main.setBackgroundColor("#000000");
@@ -20,16 +21,19 @@ class gameState extends Phaser.Scene {
 //
 
     create() { //carga los assets en pantalla desde memoria
-        this.bg1 = this.add.tileSprite(0, 0, config.width, config.height, 'background1').setOrigin(0);
-        
-      //  this.player = new character(this,config.width / 2, config.height * .8,'player');
-        this.player = this.physics.add.sprite(config.width / 2, config.height * .8, 'player').setOrigin(.5);
- 
-        this.player.body.collideWorldBounds = true;
-        //this.cameras.main.startFollow(this.player);
-       // this.cameras.main.setBounds(0,0,config.width, config.height);
-        
+        this.bg1 = this.add.tileSprite(0, 0, 1015, 192, 'background1').setOrigin(0);
+        this.player = this.physics.add.sprite(config.width / 2, config.height * .7, 'player').setOrigin(.5);
+
+        this.player.body.collideWorldBounds = true; //--> Collision with world border walls
+        this.player.body.onWorldBounds = true; //--> On collision event
+
         this.input = this.input.keyboard.createCursorKeys();
+
+        this.mapThreshold = false;
+        this.flipFlop = false;
+        this.numMapSubdivisions = 1015 / config.width;
+        this.count = this.numMapSubdivisions / 4;
+        this.canAdvance = false;
         this.createPlayerAnims();
     
     }
@@ -49,6 +53,7 @@ class gameState extends Phaser.Scene {
         {
             this.player.body.setSize(16,37,true).setOffset(30,10);
         }
+    
     }
    
     movePlayerManager()
@@ -74,6 +79,15 @@ class gameState extends Phaser.Scene {
              this.player.flipX = false;
              this.player.body.velocity.y = 0;
              this.player.anims.play('run',true);
+
+              if (this.canAdvance && (this.bg1.tilePositionX < 1015 - (config.width * this.numMapSubdivisions))) {
+                if (this.player.body.x > config.width / 2)
+                    this.bg1.tilePositionX += .5; //--> Background scroll speed
+            }
+            else {
+                this.canAdvance = false;
+                this.flipFlop = false;
+            }
        }
      else{
         this.player.body.velocity.x = 0;
@@ -94,6 +108,18 @@ class gameState extends Phaser.Scene {
        
         this.movePlayerManager();
         this.updatePlayerHitbox();
+
+        this.physics.world.on('worldbounds', (body, up, down, left, right) => {
+        });
+
+        //INPUT TO ACTIVATE FLAG TO SCROLL BACKGROUND
+        if (this.input.space.isDown) {
+            if (!this.flipFlop) {
+                this.numMapSubdivisions -= this.count;
+                this.flipFlop = true;
+                this.canAdvance = true;
+            }
+        }
     }
   
 }
