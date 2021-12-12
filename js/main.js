@@ -1,6 +1,6 @@
 var gamePrefs=
 {
-    playerSpeed: 20
+    playerSpeed: 30
 }
 var sceneVars =
 {
