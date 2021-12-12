@@ -71,18 +71,6 @@ class gameState extends Phaser.Scene {
             frameRate: 5,
             repeat: -1
         });
-        this.anims.create({
-            key: 'rightAttack',
-            frames: this.anims.generateFrameNumbers('player', { start: 5}),
-            duration: 1000,
-            repeat: 0
-        });
-        this.anims.create({
-            key: 'leftAttack',
-            frames: this.anims.generateFrameNumbers('player', { start: 4 }),
-            duration: 1000,
-            repeat: 0
-        });
     }
 
     updatePlayerHitbox() {
@@ -97,6 +85,8 @@ class gameState extends Phaser.Scene {
         this.player.setVelocity(0, 0);
         if (!this.isAttacking) 
         {
+           
+           
             if (this.cursorKeys.down.isDown) { // down
                 this.player.setVelocityY(gamePrefs.playerSpeed);
                 this.player.play('run', true);
