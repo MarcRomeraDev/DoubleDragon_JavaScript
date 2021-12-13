@@ -24,6 +24,7 @@ class gameState extends Phaser.Scene {
     create() { //carga los assets en pantalla desde memoria
         this.bg1 = this.add.tileSprite(0, 0, 1015, 192, 'background1').setOrigin(0);
         this.music = this.sound.add('bgMusic');
+        
         this.punchSound = this.sound.add('punch');
         this.music.play();
         this.healthKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.H);
@@ -40,7 +41,7 @@ class gameState extends Phaser.Scene {
         this.healthUI.scaleY = (.6);
         this.healthUI.setScrollFactor(0);
 
-
+        
         this.DoOnePunch = true;
         this.keyboardKeys = this.input.keyboard.addKeys({
             a: Phaser.Input.Keyboard.KeyCodes.A
@@ -71,6 +72,7 @@ class gameState extends Phaser.Scene {
             frameRate: 5,
             repeat: -1
         });
+
     }
 
     updatePlayerHitbox() {
