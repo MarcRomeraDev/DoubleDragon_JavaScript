@@ -39,7 +39,11 @@ class gameState extends Phaser.Scene {
         this.healthUI.scaleX = (.7);
         this.healthUI.scaleY = (.6);
         this.healthUI.setScrollFactor(0);
+        this.attackHitbox = this.add.rectangle(config.width / 2 + 20, config.height * .68, 15, 10, 0xffffff, 0);
+        this.physics.add.existing(this.attackHitbox);
+        this.physics.world.remove(this.attackHitbox.body);
 
+        this.canAttack = true;
 
         this.DoOnePunch = true;
         this.keyboardKeys = this.input.keyboard.addKeys({
@@ -62,7 +66,6 @@ class gameState extends Phaser.Scene {
         //var combo = this.input.keyboard.createCombo()
         //  this.keyA = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
         //this.keyB = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
-
     }
     createPlayerAnims() {
         this.anims.create({
@@ -83,10 +86,9 @@ class gameState extends Phaser.Scene {
     movePlayerManager() {
 
         this.player.setVelocity(0, 0);
-        if (!this.isAttacking) 
-        {
-           
-           
+        if (!this.isAttacking) {
+
+
             if (this.cursorKeys.down.isDown) { // down
                 this.player.setVelocityY(gamePrefs.playerSpeed);
                 this.player.play('run', true);
@@ -124,27 +126,32 @@ class gameState extends Phaser.Scene {
         }
     }
     attackPlayerManager() {
-        if(Phaser.Input.Keyboard.JustDown(this.keyboardKeys.a) && !this.isAttacking)
-        {
-                if (this.attackFlipFlop)
-                        this.player.setFrame(4)
-                else 
-                     this.player.setFrame(5);
+        if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.a) && !this.isAttacking) {
 
-                this.attackFlipFlop = !this.attackFlipFlop;
-              
-                this.player.stop();
-                this.punchSound.play();
-                this.isAttacking = true;
-        }
-        if(Phaser.Input.Keyboard.JustUp(this.keyboardKeys.a))
-        {
-            this.isAttacking = false;
-        }
+            if (this.attackFlipFlop)
+                this.player.setFrame(4)
+            else
+                this.player.setFrame(5);
 
+            this.physics.world.add(this.attackHitbox.body); //--> Adds hitbox to the attack when pressing input
+
+            this.attackFlipFlop = !this.attackFlipFlop;
+
+            this.player.stop();
+            this.punchSound.play();
+            this.isAttacking = true;
+
+            //Sets hitbox position infront of player and facing same way as player
+            this.attackHitbox.x = this.player.flipX ? this.player.x - this.player.width * 0.2 : this.player.x + this.player.width * 0.2;
+            this.attackHitbox.y = this.player.y - this.player.height * 0.1;
+
+            this.physics.world.remove(this.attackHitbox.body); //--> Removes hitbox of attack when attack ends
+        }
+        if (Phaser.Input.Keyboard.JustUp(this.keyboardKeys.a)) {
+            this.canAttack = false;
+        }
     }
-    resetAttackTimer()
-    {
+    resetAttackTimer() {
 
     }
 
