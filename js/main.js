@@ -1,6 +1,10 @@
 var gamePrefs=
 {
-    playerSpeed: 40
+    playerSpeed: 40,
+    enemySpeed: 35,
+    attackRange: 80,
+    heightThreshold: 10,
+    minimumDistanceBeforeAproaching: 200
 }
 var sceneVars =
 {
