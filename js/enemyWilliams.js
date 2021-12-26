@@ -4,15 +4,21 @@ class enemyWilliams extends enemyPrefab
     {
         super(_scene,_posX,_posY,_tag);
         _scene.add.existing(this);
+        //_scene.physics.add.sprite(_posX, _posY, _tag).setOrigin(.5);
         _scene.physics.world.enable(this);
-
+        //this.body.setSize(16, 37, true).setOffset(30, 10);
+        
+        this.body.collideWorldBounds = true; //--> Collision with world border walls
+        this.body.onWorldBounds = true; //--> On collision event
+        //  _scene.physics.world.enable(this);
+        
         //this.anims.play('crawl',true);
         //this.direction = 1;
-
+        
         this.target = character;
-
+      
         this.scene = _scene;
-
+        
         //this.body.velocity.x = gameOptions.jumperSpeed*this.direction;
 
         //_scene.physics.add.collider(this,_scene.hero,this.hit,null,this);
@@ -20,9 +26,15 @@ class enemyWilliams extends enemyPrefab
     
     preUpdate(time,delta)
     {
-        super.move(this,this.target);
+        
+        this.move();
+        this.depth = this.y;
         super.preUpdate(time,delta);
     }    
+    move()
+    {
+        super.move(this,this.scene.player);
+    }
 
     hit(_enemy,_hero)
     {

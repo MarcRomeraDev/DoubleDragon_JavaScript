@@ -15,6 +15,7 @@ class gameState extends Phaser.Scene {
         this.load.setPath("assets/sprites/");
         this.load.image('background1', 'Mission1BackgroundSprites/1.png');
         this.load.spritesheet('player', 'BillySprites/CharacterSpritesheet.png', { frameWidth: 72, frameHeight: 46 });
+        this.load.image('enemy','WilliamSprites/0.png');
         this.load.spritesheet('healthUI', 'HUD/health.png', { frameWidth: 128, frameHeight: 28 });
         this.load.setPath("assets/sounds/");
         this.load.audio('bgMusic', 'music/mission1.ogg');
@@ -36,6 +37,10 @@ class gameState extends Phaser.Scene {
         this.player.body.onWorldBounds = true; //--> On collision event
 
         this.player.health = 6;
+        this.isPlayerInAFight = false;
+
+     
+
         this.healthUI = this.add.sprite(0, 0, 'healthUI', this.player.health).setOrigin(0, -10);
         this.healthUI.scaleX = (.7);
         this.healthUI.scaleY = (.6);
@@ -55,7 +60,10 @@ class gameState extends Phaser.Scene {
         this.createPlayerAnims();
         this.isAttacking = false;
         this.player.setFrame(1);
-
+        this.enemy = new enemyWilliams(this,config.width / 3,304,'enemy',this.player);
+        this.enemy1 = new enemyWilliams(this,config.width / 1,304,'enemy',this.player);
+       // this.enemy.play('run', true);
+    //    this.enemy.body.collideWorldBounds = true; //--> Collision with world border walls
         // this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A, false)
         // this.input.keyboard.on("keydown_A", (e) => {
         //     this.attackPlayerManager();
@@ -152,6 +160,7 @@ class gameState extends Phaser.Scene {
 
     update() {
         this.movePlayerManager();
+        this.player.depth = this.player.y;
         this.updatePlayerHitbox();
         this.attackPlayerManager();
         this.physics.world.on('worldbounds', (body, up, down, left, right) => {
