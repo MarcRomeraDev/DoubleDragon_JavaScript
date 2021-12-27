@@ -107,7 +107,7 @@ class gameState extends Phaser.Scene {
         this.anims.create({
             key: 'williamsdie',
             frames: this.anims.generateFrameNumbers('williams', { start: 8, end: 9 }),
-            frameRate: 1,
+            frameRate:5,
             yoyo:false,
             repeat: 0
         });

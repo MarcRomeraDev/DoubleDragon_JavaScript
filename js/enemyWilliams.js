@@ -71,7 +71,6 @@ class enemyWilliams extends enemyPrefab
         }else
         {
             this.takeDmg(this,1);
-            this.setFrame('');
             //_hero.body.reset(65,100);
             //this.scene.cameras.main.shake(500,0.05);
             //this.scene.cameras.main.flash(500,255,0,0);
