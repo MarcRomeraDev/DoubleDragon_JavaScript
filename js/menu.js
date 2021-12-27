@@ -42,12 +42,10 @@ class menu extends Phaser.Scene {
 
             this.backgroundFlipFlop = !this.backgroundFlipFlop;
             this.canChangeScene = false;
-            this.changeBgTimer = this.time.delayedCall(450, this.changeBackground, [], this); //--> Timer in ms to call function that triggers swap between backgrounds
-        }
-    }
 
-    changeBackground() {
-        this.canChangeScene = true;
+            //Timer in ms to call function that triggers swap between backgrounds
+            this.changeBgTimer = this.time.delayedCall(450, function changeBackground() { this.canChangeScene = true }, [], this);
+        }
     }
 
     update() {

@@ -164,16 +164,14 @@ class gameState extends Phaser.Scene {
 
     }
 
-    changeThumbsUpVisibility() {
-        this.changeThumbsUp = true;
-    }
-
     updateThumbsUp() {
         if (this.changeThumbsUp) {
             !this.thumbsUpFlipFlop ? this.thumbsUpImage.visible = true : this.thumbsUpImage.visible = false;
             this.thumbsUpFlipFlop = !this.thumbsUpFlipFlop;
             this.changeThumbsUp = false;
-            this.thumbsUpTimer = this.time.delayedCall(450, this.changeThumbsUpVisibility, [], this); //--> Timer in ms to call function that triggers swap between backgrounds
+
+            //Timer in ms to call function that triggers swap between backgrounds
+            this.thumbsUpTimer = this.time.delayedCall(450, function changeThumbsUpVisibility() { this.changeThumbsUp = true }, [], this);
         }
     }
 
