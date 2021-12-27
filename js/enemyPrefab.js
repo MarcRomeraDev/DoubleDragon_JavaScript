@@ -36,6 +36,7 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
 
     takeDmg(_enemy, _dmgTaken) {
         if (this.isVulnerable) {
+            _enemy.anims.play(this.eType + 'run', false);
             this.health -= _dmgTaken;
             this.isVulnerable = false;
             console.log(this.health);
@@ -62,7 +63,9 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
     }
     attack(_enemy) {
         if (!this.isAttacking && this.eMoveState == "IN_RANGE" && this.isVulnerable) {
+            _enemy.anims.play(this.eType + 'run', false);
             console.log("Attack!");
+            this.scene.punchSound.play();
             this.flipFlop = !this.flipFlop;
             if (this.flipFlop) { //right punch
                 _enemy.setFrame(4);
@@ -130,7 +133,7 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
                 }
                 else {
                     _enemy.body.velocity.x = 0; // here we always are in attacking range
-                    if (distanceY < 1)
+                    if (distanceY < 1  )
                         this.changeMoveState("IN_RANGE");
                 }
             }
@@ -172,16 +175,16 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
                     }
                     else {
                         _enemy.body.velocity.x = 0; // here I wait for my chance
+                        this.changeMoveState("WAITING");
+                        _enemy.anims.play(this.eType + 'run', false);
+                        //this.resetEnemyFrameToIddle(_enemy);
                     }
                 }
 
             }
             if (this.eMoveState == "AWAY") {
-                if (_enemy.body.velocity.x != 0 || _enemy.body.velocity.y != 0)
-                    _enemy.anims.play(this.eType + 'run', true);
-                else {
-                    this.resetEnemyFrameToIddle(_enemy);
-                }
+               // _enemy.anims.play(this.eType + 'takeDmg', false);
+                _enemy.anims.play(this.eType + 'run', true);
             }
         }
 
