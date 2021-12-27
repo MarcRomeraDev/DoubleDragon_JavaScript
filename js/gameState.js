@@ -17,6 +17,7 @@ class gameState extends Phaser.Scene {
         this.load.image('background1', 'Mission1BackgroundSprites/1.png');
         this.load.spritesheet('player', 'BillySprites/CharacterSpritesheet.png', { frameWidth: 72, frameHeight: 46 });
         this.load.spritesheet('healthUI', 'HUD/health.png', { frameWidth: 128, frameHeight: 28 });
+        this.load.image('thumbsUp', 'Props/thumbsUp.png');
 
         //AUDIO
         this.load.setPath("assets/sounds/");
@@ -32,6 +33,10 @@ class gameState extends Phaser.Scene {
         this.healthKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.H);
         this.player = this.physics.add.sprite(config.width / 2, config.height * .7, 'player').setOrigin(.5);
         this.player.body.setSize(16, 37, true).setOffset(30, 10);
+
+        this.thumbsUpImage = this.add.sprite(config.width - 40, config.height / 2, 'thumbsUp').setOrigin(.5);
+        this.changeThumbsUp = false;
+        this.thumbsUpImage.visible = false
 
         this.player.body.collideWorldBounds = true; //--> Collision with world border walls
         this.player.body.onWorldBounds = true; //--> On collision event
@@ -113,6 +118,8 @@ class gameState extends Phaser.Scene {
                 this.player.flipX = false;
                 if (this.canAdvance && (this.bg1.tilePositionX < 1015 - (config.width * this.numMapSubdivisions))) {
                     if (this.player.body.x > config.width * 2 / 3) {
+                        this.changeThumbsUp = false;
+                        this.thumbsUpImage.visible = false
                         this.bg1.tilePositionX += .5; //--> Background scroll speed
                         this.player.body.velocity.x = 0.001;
                     }
@@ -157,6 +164,19 @@ class gameState extends Phaser.Scene {
 
     }
 
+    changeThumbsUpVisibility() {
+        this.changeThumbsUp = true;
+    }
+
+    updateThumbsUp() {
+        if (this.changeThumbsUp) {
+            !this.thumbsUpFlipFlop ? this.thumbsUpImage.visible = true : this.thumbsUpImage.visible = false;
+            this.thumbsUpFlipFlop = !this.thumbsUpFlipFlop;
+            this.changeThumbsUp = false;
+            this.thumbsUpTimer = this.time.delayedCall(450, this.changeThumbsUpVisibility, [], this); //--> Timer in ms to call function that triggers swap between backgrounds
+        }
+    }
+
     update(time, delta) {
         this.movePlayerManager();
         this.updatePlayerHitbox();
@@ -171,8 +191,11 @@ class gameState extends Phaser.Scene {
                 this.numMapSubdivisions -= this.count;
                 this.flipFlop = true;
                 this.canAdvance = true;
+                this.changeThumbsUp = true;
             }
         }
+
+        this.updateThumbsUp();
 
         //INPUT TO TEST RECIEVE DAMAGE
         if (Phaser.Input.Keyboard.JustDown(this.healthKey)) {
