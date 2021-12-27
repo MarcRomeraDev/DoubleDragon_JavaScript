@@ -47,7 +47,8 @@ class gameState extends Phaser.Scene {
         this.healthUI.setScrollFactor(0);
         this.attackHitbox = this.add.rectangle(config.width / 2 + 20, config.height * .68, 15, 10, 0xffffff, 0);
         this.physics.add.existing(this.attackHitbox);
-        this.physics.world.remove(this.attackHitbox.body);
+        
+        
 
         this.canAttack = true;
 
@@ -68,6 +69,9 @@ class gameState extends Phaser.Scene {
         this.enemy = new enemyWilliams(this,config.width / 3,304,'williams',this.player,3,10);
         this.enemy1 = new enemyWilliams(this,config.width / 1,304,'williams',this.player,3,10);
        
+        this.physics.add.overlap(this.attackHitbox.body,this.enemy.body ,this.enemy.hit,null,this.enemy);
+        this.physics.add.overlap(this.attackHitbox.body,this.enemy1.body ,this.enemy1.hit,null,this.enemy1);
+        this.physics.world.remove(this.attackHitbox.body);
         // this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A, false)
         // this.input.keyboard.on("keydown_A", (e) => {
         //     this.attackPlayerManager();
@@ -107,6 +111,7 @@ class gameState extends Phaser.Scene {
             yoyo:false,
             repeat: 0
         });
+    }
 
     updatePlayerHitbox() {
         if (this.player.anims.currentFrame != null) {
@@ -153,12 +158,15 @@ class gameState extends Phaser.Scene {
             }
 
             if (this.player.body.velocity.x == 0 && this.player.body.velocity.y == 0)
-                 this.iddlePlayer();
+            this.player.setFrame(1);
         }
     }
     iddlePlayer()
     {
         this.player.setFrame(1);
+        this.physics.world.remove(this.attackHitbox.body); //--> Removes hitbox of attack when attack ends
+        
+        
     }
     attackPlayerManager() {
         
@@ -189,13 +197,13 @@ class gameState extends Phaser.Scene {
             this.attackHitbox.x = this.player.flipX ? this.player.x - this.player.width * 0.2 : this.player.x + this.player.width * 0.2;
             this.attackHitbox.y = this.player.y - this.player.height * 0.1;
 
-            this.physics.world.remove(this.attackHitbox.body); //--> Removes hitbox of attack when attack ends
-       
+           
                 this.AttackingTimer = this.time.delayedCall(gamePrefs.attackRate,this.resetAttackTimer,[],this);
         }
     }
     resetAttackTimer() {
         this.isAttacking = false;
+        
     }
 
     update(time, delta) {

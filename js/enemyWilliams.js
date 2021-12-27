@@ -62,20 +62,9 @@ class enemyWilliams extends enemyPrefab
         }
     }
 
-    hit(_enemy,_hero)
+    hit()
     {
-        if(_enemy.body.touching.up && _hero.body.touching.down)
-        {
-            //_hero.body.velocity.y = -gameOptions.heroJump;
-            //this.destroy();
-        }else
-        {
-            this.takeDmg(this,1);
-            //_hero.body.reset(65,100);
-            //this.scene.cameras.main.shake(500,0.05);
-            //this.scene.cameras.main.flash(500,255,0,0);
-        }
-
+        this.takeDmg(this,1);
     }
     
 }
