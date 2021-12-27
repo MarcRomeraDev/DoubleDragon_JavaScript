@@ -1,6 +1,15 @@
 var gamePrefs=
 {
-    playerSpeed: 40
+    playerSpeed: 40,
+    enemySpeed: 20  ,
+    attackRange: 25,
+    heightThreshold: 20,
+    forceApproachDistance: 60,
+    evadeThreshold: 2,
+    attackRate: 310,
+    punchDuration: 155,
+    vulnerableTimer: 300,
+    knockDownTimer: 2000
 }
 var sceneVars =
 {

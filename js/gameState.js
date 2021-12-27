@@ -16,6 +16,7 @@ class gameState extends Phaser.Scene {
         this.load.setPath("assets/sprites/");
         this.load.image('background1', 'Mission1BackgroundSprites/1.png');
         this.load.spritesheet('player', 'BillySprites/CharacterSpritesheet.png', { frameWidth: 72, frameHeight: 46 });
+        this.load.spritesheet('williams', 'WilliamSprites/williams.png', { frameWidth: 66, frameHeight: 39 });
         this.load.spritesheet('healthUI', 'HUD/health.png', { frameWidth: 128, frameHeight: 28 });
         this.load.image('thumbsUp', 'Props/thumbsUp.png');
         this.load.image('health', 'HUD/Screenshot_2.png');
@@ -43,17 +44,16 @@ class gameState extends Phaser.Scene {
         this.player.body.onWorldBounds = true; //--> On collision event
 
         this.player.health = 6;
-        //this.healthUI = this.add.sprite(0, 0, 'healthUI', this.player.health).setOrigin(0, -12);
-        // this.healthUI.scaleX = (.7);
-        // this.healthUI.scaleY = (.6);
-        //this.health = this.add.sprite(0, 0, 'health').setOrigin(0);
-        //this.health.setCrop(0, 0, 204, 64);
-        this.health = this.add.sprite(config.width - 40, config.height / 2, 'health').setOrigin(.5);
-        //this.health.setDisplaySize(80, 6);
-        this.health.setScrollFactor(0);
+        this.isPlayerInAFight = false;
+
+        this.wantsToAttack = false;
+        this.healthUI = this.add.sprite(0, 0, 'healthUI', this.player.health).setOrigin(0, -12);
+        this.healthUI.scaleX = (.7);
+        this.healthUI.scaleY = (.6);
+        this.healthUI.setScrollFactor(0);
         this.attackHitbox = this.add.rectangle(config.width / 2 + 20, config.height * .68, 15, 10, 0xffffff, 0);
         this.physics.add.existing(this.attackHitbox);
-        this.physics.world.remove(this.attackHitbox.body);
+        this.attackHitbox.body.enable = false;
 
         this.canAttack = true;
 
@@ -68,9 +68,14 @@ class gameState extends Phaser.Scene {
         this.count = this.numMapSubdivisions / 4;
         this.canAdvance = false;
         this.createPlayerAnims();
+        this.createWilliamsAnims();
         this.isAttacking = false;
         this.player.setFrame(1);
+        this.enemy = new enemyWilliams(this, config.width / 3, 304, 'williams', this.player, 3, 10);
+        this.enemy1 = new enemyWilliams(this, config.width / 1, 304, 'williams', this.player, 3, 10);
 
+        this.physics.add.overlap(this.attackHitbox, this.enemy, this.enemy.hit, null, this.enemy);
+        this.physics.add.overlap(this.attackHitbox, this.enemy1, this.enemy1.hit, null, this.enemy1);
         // this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A, false)
         // this.input.keyboard.on("keydown_A", (e) => {
         //     this.attackPlayerManager();
@@ -88,12 +93,34 @@ class gameState extends Phaser.Scene {
             repeat: -1
         });
     }
+    createWilliamsAnims() {
+        this.anims.create({
+            key: 'williamsrun',
+            frames: this.anims.generateFrameNumbers('williams', { start: 0, end: 2 }),
+            frameRate: 5,
+            yoyo: true,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'williamstakeDmg',
+            frames: this.anims.generateFrameNumbers('williams', { start: 5, end: 7 }),
+            frameRate: 5,
+            yoyo: true,
+            repeat: 0
+        });
+        this.anims.create({
+            key: 'williamsdie',
+            frames: this.anims.generateFrameNumbers('williams', { start: 8, end: 9 }),
+            frameRate: 5,
+            yoyo: false,
+            repeat: 0
+        });
+    }
 
     updatePlayerHitbox() {
         if (this.player.anims.currentFrame != null) {
             this.player.body.setSize(16, 37, true).setOffset(30, 10);
         }
-
     }
 
     movePlayerManager() {
@@ -139,18 +166,29 @@ class gameState extends Phaser.Scene {
                 this.player.setFrame(1);
         }
     }
-    attackPlayerManager() {
-        if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.a) && !this.isAttacking) {
+    iddlePlayer() {
+        this.player.setFrame(1);
+        this.attackHitbox.body.enable = false; //--> Removes hitbox of attack when attack ends
+    }
 
+    attackPlayerManager() {
+
+        if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.a)) {
+            this.wantsToAttack = true;
+        }
+        if (Phaser.Input.Keyboard.JustUp(this.keyboardKeys.a)) {
+            this.wantsToAttack = false;
+        }
+
+        if (!this.isAttacking && this.wantsToAttack) //65 == a
+        {
             if (this.attackFlipFlop)
                 this.player.setFrame(4)
             else
                 this.player.setFrame(5);
 
-            this.physics.world.add(this.attackHitbox.body); //--> Adds hitbox to the attack when pressing input
-
             this.attackFlipFlop = !this.attackFlipFlop;
-
+            this.punchTimer = this.time.delayedCall(gamePrefs.punchDuration, this.iddlePlayer, [], this);
             this.player.stop();
             this.punchSound.play();
             this.isAttacking = true;
@@ -159,14 +197,14 @@ class gameState extends Phaser.Scene {
             this.attackHitbox.x = this.player.flipX ? this.player.x - this.player.width * 0.2 : this.player.x + this.player.width * 0.2;
             this.attackHitbox.y = this.player.y - this.player.height * 0.1;
 
-            this.physics.world.remove(this.attackHitbox.body); //--> Removes hitbox of attack when attack ends
-        }
-        if (Phaser.Input.Keyboard.JustUp(this.keyboardKeys.a)) {
-            this.isAttacking = false;
+            this.physics.world.add(this.attackHitbox.body); //--> Adds hitbox to the attack when pressing input
+
+            this.AttackingTimer = this.time.delayedCall(gamePrefs.attackRate, this.resetAttackTimer, [], this);
         }
     }
-    resetAttackTimer() {
 
+    resetAttackTimer() {
+        this.isAttacking = false;
     }
 
     updateThumbsUp() {
@@ -186,7 +224,6 @@ class gameState extends Phaser.Scene {
         this.attackPlayerManager();
         this.physics.world.on('worldbounds', (body, up, down, left, right) => {
         });
-
 
         //INPUT TO ACTIVATE FLAG TO SCROLL BACKGROUND
         if (this.cursorKeys.space.isDown) {
