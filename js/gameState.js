@@ -38,17 +38,16 @@ class gameState extends Phaser.Scene {
         this.player.body.onWorldBounds = true; //--> On collision event
 
         this.player.health = 6;
-         this.isPlayerInAFight = false;
+        this.isPlayerInAFight = false;
 
-     this.wantsToAttack = false;
+        this.wantsToAttack = false;
         this.healthUI = this.add.sprite(0, 0, 'healthUI', this.player.health).setOrigin(0, -12);
         this.healthUI.scaleX = (.7);
         this.healthUI.scaleY = (.6);
         this.healthUI.setScrollFactor(0);
         this.attackHitbox = this.add.rectangle(config.width / 2 + 20, config.height * .68, 15, 10, 0xffffff, 0);
         this.physics.add.existing(this.attackHitbox);
-        
-        
+        this.attackHitbox.body.enable = false;
 
         this.canAttack = true;
 
@@ -63,15 +62,14 @@ class gameState extends Phaser.Scene {
         this.count = this.numMapSubdivisions / 4;
         this.canAdvance = false;
         this.createPlayerAnims();
-         this.createWilliamsAnims();
+        this.createWilliamsAnims();
         this.isAttacking = false;
         this.player.setFrame(1);
-        this.enemy = new enemyWilliams(this,config.width / 3,304,'williams',this.player,3,10);
-        this.enemy1 = new enemyWilliams(this,config.width / 1,304,'williams',this.player,3,10);
-       
-        this.physics.add.overlap(this.attackHitbox.body,this.enemy.body ,this.enemy.hit,null,this.enemy);
-        this.physics.add.overlap(this.attackHitbox.body,this.enemy1.body ,this.enemy1.hit,null,this.enemy1);
-        this.physics.world.remove(this.attackHitbox.body);
+        this.enemy = new enemyWilliams(this, config.width / 3, 304, 'williams', this.player, 3, 10);
+        this.enemy1 = new enemyWilliams(this, config.width / 1, 304, 'williams', this.player, 3, 10);
+
+        this.physics.add.overlap(this.attackHitbox, this.enemy, this.enemy.hit, null, this.enemy);
+        this.physics.add.overlap(this.attackHitbox, this.enemy1, this.enemy1.hit, null, this.enemy1);
         // this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A, false)
         // this.input.keyboard.on("keydown_A", (e) => {
         //     this.attackPlayerManager();
@@ -94,21 +92,21 @@ class gameState extends Phaser.Scene {
             key: 'williamsrun',
             frames: this.anims.generateFrameNumbers('williams', { start: 0, end: 2 }),
             frameRate: 5,
-            yoyo:true,
+            yoyo: true,
             repeat: -1
         });
         this.anims.create({
             key: 'williamstakeDmg',
             frames: this.anims.generateFrameNumbers('williams', { start: 5, end: 7 }),
             frameRate: 5,
-            yoyo:true,
+            yoyo: true,
             repeat: 0
         });
         this.anims.create({
             key: 'williamsdie',
             frames: this.anims.generateFrameNumbers('williams', { start: 8, end: 9 }),
-            frameRate:5,
-            yoyo:false,
+            frameRate: 5,
+            yoyo: false,
             repeat: 0
         });
     }
@@ -117,7 +115,6 @@ class gameState extends Phaser.Scene {
         if (this.player.anims.currentFrame != null) {
             this.player.body.setSize(16, 37, true).setOffset(30, 10);
         }
-
     }
 
     movePlayerManager() {
@@ -158,52 +155,48 @@ class gameState extends Phaser.Scene {
             }
 
             if (this.player.body.velocity.x == 0 && this.player.body.velocity.y == 0)
-            this.player.setFrame(1);
+                this.player.setFrame(1);
         }
     }
-    iddlePlayer()
-    {
+    iddlePlayer() {
         this.player.setFrame(1);
-        this.physics.world.remove(this.attackHitbox.body); //--> Removes hitbox of attack when attack ends
-        
-        
+        this.attackHitbox.body.enable = false; //--> Removes hitbox of attack when attack ends
     }
+
     attackPlayerManager() {
-        
-        if(Phaser.Input.Keyboard.JustDown(this.keyboardKeys.a))
-        {
+
+        if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.a)) {
             this.wantsToAttack = true;
         }
-        if(Phaser.Input.Keyboard.JustUp(this.keyboardKeys.a))
-        {
+        if (Phaser.Input.Keyboard.JustUp(this.keyboardKeys.a)) {
             this.wantsToAttack = false;
         }
 
-         if(!this.isAttacking && this.wantsToAttack) //65 == a
+        if (!this.isAttacking && this.wantsToAttack) //65 == a
         {
-                if (this.attackFlipFlop)
-                    this.player.setFrame(4)
-                else 
-                     this.player.setFrame(5);
+            if (this.attackFlipFlop)
+                this.player.setFrame(4)
+            else
+                this.player.setFrame(5);
 
-                  this.physics.world.add(this.attackHitbox.body); //--> Adds hitbox to the attack when pressing input
+            this.attackFlipFlop = !this.attackFlipFlop;
+            this.punchTimer = this.time.delayedCall(gamePrefs.punchDuration, this.iddlePlayer, [], this);
+            this.player.stop();
+            this.punchSound.play();
+            this.isAttacking = true;
 
-                this.attackFlipFlop = !this.attackFlipFlop;
-               this.punchTimer = this.time.delayedCall(gamePrefs.punchDuration, this.iddlePlayer,[],this);
-                this.player.stop();
-                this.punchSound.play();
-                this.isAttacking = true;
-                //Sets hitbox position infront of player and facing same way as player
+            //Sets hitbox position infront of player and facing same way as player
             this.attackHitbox.x = this.player.flipX ? this.player.x - this.player.width * 0.2 : this.player.x + this.player.width * 0.2;
             this.attackHitbox.y = this.player.y - this.player.height * 0.1;
 
-           
-                this.AttackingTimer = this.time.delayedCall(gamePrefs.attackRate,this.resetAttackTimer,[],this);
+            this.physics.world.add(this.attackHitbox.body); //--> Adds hitbox to the attack when pressing input
+
+            this.AttackingTimer = this.time.delayedCall(gamePrefs.attackRate, this.resetAttackTimer, [], this);
         }
     }
+
     resetAttackTimer() {
         this.isAttacking = false;
-        
     }
 
     update(time, delta) {
@@ -212,7 +205,6 @@ class gameState extends Phaser.Scene {
         this.attackPlayerManager();
         this.physics.world.on('worldbounds', (body, up, down, left, right) => {
         });
-
 
         //INPUT TO ACTIVATE FLAG TO SCROLL BACKGROUND
         if (this.cursorKeys.space.isDown) {
