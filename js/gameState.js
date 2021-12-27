@@ -113,7 +113,7 @@ class gameState extends Phaser.Scene {
                 this.player.flipX = false;
                 if (this.canAdvance && (this.bg1.tilePositionX < 1015 - (config.width * this.numMapSubdivisions))) {
                     if (this.player.body.x > config.width * 2 / 3) {
-                        this.bg1.tilePositionX += .3; //--> Background scroll speed
+                        this.bg1.tilePositionX += .5; //--> Background scroll speed
                         this.player.body.velocity.x = 0.001;
                     }
                 }
