@@ -7,23 +7,26 @@ class gameState extends Phaser.Scene {
                 key: "gameState"
 
             });
-
     }
 
     preload() { //carga los assets en memoria
         this.cameras.main.setBackgroundColor("#000000");
+
+        //SPRITES
         this.load.setPath("assets/sprites/");
         this.load.image('background1', 'Mission1BackgroundSprites/1.png');
         this.load.spritesheet('player', 'BillySprites/CharacterSpritesheet.png', { frameWidth: 72, frameHeight: 46 });
         this.load.spritesheet('healthUI', 'HUD/health.png', { frameWidth: 128, frameHeight: 28 });
+
+        //AUDIO
         this.load.setPath("assets/sounds/");
-        this.load.audio('bgMusic', 'music/mission1.ogg');
-        this.load.audio('punch', 'pucnh.ogg');
+        this.load.audio('bgMusic', 'music/mission1.mp3');
+        this.load.audio('punch', 'effects/punch.ogg');
     }
 
     create() { //carga los assets en pantalla desde memoria
         this.bg1 = this.add.tileSprite(0, 0, 1015, 192, 'background1').setOrigin(0);
-        this.music = this.sound.add('bgMusic');
+        this.music = this.sound.add('bgMusic', { volume: .3 }, { loop: true });
         this.punchSound = this.sound.add('punch');
         this.music.play();
         this.healthKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.H);
@@ -34,7 +37,7 @@ class gameState extends Phaser.Scene {
         this.player.body.onWorldBounds = true; //--> On collision event
 
         this.player.health = 6;
-        this.healthUI = this.add.sprite(0, 0, 'healthUI', this.player.health).setOrigin(0, -10);
+        this.healthUI = this.add.sprite(0, 0, 'healthUI', this.player.health).setOrigin(0, -12);
         this.healthUI.scaleX = (.7);
         this.healthUI.scaleY = (.6);
         this.healthUI.setScrollFactor(0);
@@ -66,6 +69,7 @@ class gameState extends Phaser.Scene {
         //  this.keyA = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
         //this.keyB = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
     }
+
     createPlayerAnims() {
         this.anims.create({
             key: 'run',
@@ -83,17 +87,16 @@ class gameState extends Phaser.Scene {
     }
 
     movePlayerManager() {
-
         this.player.setVelocity(0, 0);
         if (!this.isAttacking) {
-
-
             if (this.cursorKeys.down.isDown) { // down
-                this.player.setVelocityY(gamePrefs.playerSpeed);
-                this.player.play('run', true);
+                if (this.player.body.y < 2 / 3 * config.height + 5) {
+                    this.player.setVelocityY(gamePrefs.playerSpeed);
+                    this.player.play('run', true);
+                }
             }
             else if (this.cursorKeys.up.isDown) { // up
-                if (this.player.body.y > config.height / 2 + 10) {
+                if (this.player.body.y > config.height / 2) {
                     this.player.setVelocityY(-gamePrefs.playerSpeed);
                     this.player.play('run', true);
                 }
