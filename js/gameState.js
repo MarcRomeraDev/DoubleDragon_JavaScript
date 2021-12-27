@@ -192,6 +192,7 @@ class gameState extends Phaser.Scene {
                 this.flipFlop = true;
                 this.canAdvance = true;
                 this.changeThumbsUp = true;
+                this.thumbsUpFlipFlop = false;
             }
         }
 
