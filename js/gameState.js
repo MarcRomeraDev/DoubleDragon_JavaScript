@@ -9,13 +9,15 @@ class gameState extends Phaser.Scene {
             });
 
     }
+    
 
     preload() { //carga los assets en memoria
         this.cameras.main.setBackgroundColor("#000000");
         this.load.setPath("assets/sprites/");
         this.load.image('background1', 'Mission1BackgroundSprites/1.png');
         this.load.spritesheet('player', 'BillySprites/CharacterSpritesheet.png', { frameWidth: 72, frameHeight: 46 });
-        this.load.image('enemy','WilliamSprites/0.png');
+        this.load.spritesheet('williams', 'WilliamSprites/williams.png', { frameWidth: 66, frameHeight: 39 });
+        //this.load.image('williams','WilliamSprites/0.png'); // frameWidth:66 , frameHeight: 39  for spriteSheet// frameWidth:16 , frameHeight: 39 for hitBox
         this.load.spritesheet('healthUI', 'HUD/health.png', { frameWidth: 128, frameHeight: 28 });
         this.load.setPath("assets/sounds/");
         this.load.audio('bgMusic', 'music/mission1.ogg');
@@ -25,7 +27,7 @@ class gameState extends Phaser.Scene {
     create() { //carga los assets en pantalla desde memoria
         this.bg1 = this.add.tileSprite(0, 0, 1015, 192, 'background1').setOrigin(0);
         this.music = this.sound.add('bgMusic');
-        
+       
         this.punchSound = this.sound.add('punch');
         this.music.play();
         this.healthKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.H);
@@ -35,11 +37,11 @@ class gameState extends Phaser.Scene {
 
         this.player.body.collideWorldBounds = true; //--> Collision with world border walls
         this.player.body.onWorldBounds = true; //--> On collision event
-
+        //this.input.keyboard.enabled = false;
         this.player.health = 6;
         this.isPlayerInAFight = false;
 
-     
+     this.wantsToAttack = false;
 
         this.healthUI = this.add.sprite(0, 0, 'healthUI', this.player.health).setOrigin(0, -10);
         this.healthUI.scaleX = (.7);
@@ -51,17 +53,22 @@ class gameState extends Phaser.Scene {
         this.keyboardKeys = this.input.keyboard.addKeys({
             a: Phaser.Input.Keyboard.KeyCodes.A
         });
+        //this.attackKey.on('keydown', this.attackPlayerManager, this);
         this.cursorKeys = this.input.keyboard.createCursorKeys();
+        //this.input.keyboard.on('keydown_A', this.attackPlayerManager, this);
         this.attackFlipFlop = false;
         this.flipFlop = false;
         this.numMapSubdivisions = 1015 / config.width;
         this.count = this.numMapSubdivisions / 4;
         this.canAdvance = false;
         this.createPlayerAnims();
+        this.createWilliamsAnims();
         this.isAttacking = false;
         this.player.setFrame(1);
-        this.enemy = new enemyWilliams(this,config.width / 3,304,'enemy',this.player);
-        this.enemy1 = new enemyWilliams(this,config.width / 1,304,'enemy',this.player);
+      
+
+        this.enemy = new enemyWilliams(this,config.width / 3,304,'williams',this.player,3,10);
+        this.enemy1 = new enemyWilliams(this,config.width / 1,304,'williams',this.player,3,10);
        // this.enemy.play('run', true);
     //    this.enemy.body.collideWorldBounds = true; //--> Collision with world border walls
         // this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A, false)
@@ -82,6 +89,30 @@ class gameState extends Phaser.Scene {
         });
 
     }
+    createWilliamsAnims() {
+        this.anims.create({
+            key: 'williamsrun',
+            frames: this.anims.generateFrameNumbers('williams', { start: 0, end: 2 }),
+            frameRate: 5,
+            yoyo:true,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'williamstakeDmg',
+            frames: this.anims.generateFrameNumbers('williams', { start: 5, end: 7 }),
+            frameRate: 5,
+            yoyo:true,
+            repeat: 0
+        });
+        this.anims.create({
+            key: 'williamsdie',
+            frames: this.anims.generateFrameNumbers('williams', { start: 8, end: 9 }),
+            frameRate: 1,
+            yoyo:false,
+            repeat: 0
+        });
+
+    }
 
     updatePlayerHitbox() {
         if (this.player.anims.currentFrame != null) {
@@ -93,7 +124,7 @@ class gameState extends Phaser.Scene {
     movePlayerManager() {
 
         this.player.setVelocity(0, 0);
-        if (!this.isAttacking) 
+        if (!this.isAttacking ) 
         {
            
            
@@ -130,32 +161,45 @@ class gameState extends Phaser.Scene {
             }
 
             if (this.player.body.velocity.x == 0 && this.player.body.velocity.y == 0)
-                this.player.setFrame(1);
+                this.iddlePlayer();
         }
     }
-    attackPlayerManager() {
-        if(Phaser.Input.Keyboard.JustDown(this.keyboardKeys.a) && !this.isAttacking)
-        {
-                if (this.attackFlipFlop)
-                        this.player.setFrame(4)
-                else 
-                     this.player.setFrame(5);
+    iddlePlayer()
+    {
+        this.player.setFrame(1);
+    }
 
-                this.attackFlipFlop = !this.attackFlipFlop;
-              
-                this.player.stop();
-                this.punchSound.play();
-                this.isAttacking = true;
+    attackPlayerManager() {
+
+        if(Phaser.Input.Keyboard.JustDown(this.keyboardKeys.a))
+        {
+            this.wantsToAttack = true;
         }
         if(Phaser.Input.Keyboard.JustUp(this.keyboardKeys.a))
         {
-            this.isAttacking = false;
+            this.wantsToAttack = false;
+        }
+
+         if(!this.isAttacking && this.wantsToAttack) //65 == a
+        {
+                if (this.attackFlipFlop)
+                    this.player.setFrame(4)
+                else 
+                     this.player.setFrame(5);
+
+                
+                this.attackFlipFlop = !this.attackFlipFlop;
+               this.punchTimer = this.time.delayedCall(gamePrefs.punchDuration, this.iddlePlayer,[],this);
+                this.player.stop();
+                this.punchSound.play();
+                this.isAttacking = true;
+                this.AttackingTimer = this.time.delayedCall(gamePrefs.attackRate,this.resetAttackTimer,[],this);
         }
 
     }
     resetAttackTimer()
     {
-
+        this.isAttacking = false;
     }
 
     update() {

@@ -5,7 +5,11 @@ var gamePrefs=
     attackRange: 25,
     heightThreshold: 20,
     forceApproachDistance: 60,
-    evadeThreshold: 10
+    evadeThreshold: 10,
+    attackRate: 310,
+    punchDuration: 155,
+    vulnerableTimer: 300,
+    knockDownTimer: 2000
 }
 var sceneVars =
 {
