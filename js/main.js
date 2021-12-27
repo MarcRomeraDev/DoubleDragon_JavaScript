@@ -10,8 +10,8 @@ var config=
 {
     type: Phaser.AUTO,
     width:248,
-    height:192,
-    scene:[gameState], //array con los niveles
+    height:224,
+    scene:[menu, gameState], //array con los niveles
     render:{
         pixelArt:true
     },
