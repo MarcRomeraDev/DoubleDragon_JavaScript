@@ -18,6 +18,7 @@ class gameState extends Phaser.Scene {
         this.load.spritesheet('player', 'BillySprites/CharacterSpritesheet.png', { frameWidth: 72, frameHeight: 46 });
         this.load.spritesheet('healthUI', 'HUD/health.png', { frameWidth: 128, frameHeight: 28 });
         this.load.image('thumbsUp', 'Props/thumbsUp.png');
+        this.load.image('health', 'HUD/Screenshot_2.png');
 
         //AUDIO
         this.load.setPath("assets/sounds/");
@@ -42,10 +43,14 @@ class gameState extends Phaser.Scene {
         this.player.body.onWorldBounds = true; //--> On collision event
 
         this.player.health = 6;
-        this.healthUI = this.add.sprite(0, 0, 'healthUI', this.player.health).setOrigin(0, -12);
-        this.healthUI.scaleX = (.7);
-        this.healthUI.scaleY = (.6);
-        this.healthUI.setScrollFactor(0);
+        //this.healthUI = this.add.sprite(0, 0, 'healthUI', this.player.health).setOrigin(0, -12);
+        // this.healthUI.scaleX = (.7);
+        // this.healthUI.scaleY = (.6);
+        //this.health = this.add.sprite(0, 0, 'health').setOrigin(0);
+        //this.health.setCrop(0, 0, 204, 64);
+        this.health = this.add.sprite(config.width - 40, config.height / 2, 'health').setOrigin(.5);
+        //this.health.setDisplaySize(80, 6);
+        this.health.setScrollFactor(0);
         this.attackHitbox = this.add.rectangle(config.width / 2 + 20, config.height * .68, 15, 10, 0xffffff, 0);
         this.physics.add.existing(this.attackHitbox);
         this.physics.world.remove(this.attackHitbox.body);
@@ -199,7 +204,7 @@ class gameState extends Phaser.Scene {
         //INPUT TO TEST RECIEVE DAMAGE
         if (Phaser.Input.Keyboard.JustDown(this.healthKey)) {
             this.player.health--;
-            this.healthUI.setFrame(this.player.health);
+            //this.healthUI.setFrame(this.player.health);
             this.checkPlayerHealth();
         }
     }
