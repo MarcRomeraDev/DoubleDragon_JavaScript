@@ -18,7 +18,7 @@ class menu extends Phaser.Scene {
     }
 
     create() {
-        this.music = this.sound.add('menuMusic', { volume: .3 }, { loop: true });
+        this.music = this.sound.add('menuMusic', { volume: .3, loop: true });
         this.music.play();
 
         this.keyboardKeys = this.input.keyboard.addKeys({

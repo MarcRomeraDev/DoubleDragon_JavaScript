@@ -26,7 +26,7 @@ class gameState extends Phaser.Scene {
 
     create() { //carga los assets en pantalla desde memoria
         this.bg1 = this.add.tileSprite(0, 0, 1015, 192, 'background1').setOrigin(0);
-        this.music = this.sound.add('bgMusic', { volume: .3 }, { loop: true });
+        this.music = this.sound.add('bgMusic', { volume: .3, loop: true });
         this.punchSound = this.sound.add('punch');
         this.music.play();
         this.healthKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.H);
@@ -157,7 +157,7 @@ class gameState extends Phaser.Scene {
 
     }
 
-    update() {
+    update(time, delta) {
         this.movePlayerManager();
         this.updatePlayerHitbox();
         this.attackPlayerManager();
