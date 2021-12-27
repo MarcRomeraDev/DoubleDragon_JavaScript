@@ -27,7 +27,6 @@ class gameState extends Phaser.Scene {
         this.punchSound = this.sound.add('punch');
         this.music.play();
         this.healthKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.H);
-        this.bg1 = this.add.tileSprite(0, 0, 1015, config.height, 'background1').setOrigin(0);
         this.player = this.physics.add.sprite(config.width / 2, config.height * .7, 'player').setOrigin(.5);
         this.player.body.setSize(16, 37, true).setOffset(30, 10);
 
@@ -148,7 +147,7 @@ class gameState extends Phaser.Scene {
             this.physics.world.remove(this.attackHitbox.body); //--> Removes hitbox of attack when attack ends
         }
         if (Phaser.Input.Keyboard.JustUp(this.keyboardKeys.a)) {
-            this.canAttack = false;
+            this.isAttacking = false;
         }
     }
     resetAttackTimer() {
@@ -172,6 +171,7 @@ class gameState extends Phaser.Scene {
             }
         }
 
+        //INPUT TO TEST RECIEVE DAMAGE
         if (Phaser.Input.Keyboard.JustDown(this.healthKey)) {
             this.player.health--;
             this.healthUI.setFrame(this.player.health);
