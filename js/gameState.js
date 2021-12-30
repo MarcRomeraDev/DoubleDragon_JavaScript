@@ -17,9 +17,8 @@ class gameState extends Phaser.Scene {
         this.load.image('background1', 'Mission1BackgroundSprites/1.png');
         this.load.spritesheet('player', 'BillySprites/CharacterSpritesheet.png', { frameWidth: 72, frameHeight: 46 });
         this.load.spritesheet('williams', 'WilliamSprites/williams.png', { frameWidth: 66, frameHeight: 39 });
-        this.load.spritesheet('healthUI', 'HUD/health.png', { frameWidth: 128, frameHeight: 28 });
         this.load.image('thumbsUp', 'Props/thumbsUp.png');
-        this.load.image('health', 'HUD/Screenshot_2.png');
+        this.load.image('health', 'HUD/health_bar.png');
 
         //AUDIO
         this.load.setPath("assets/sounds/");
@@ -28,39 +27,46 @@ class gameState extends Phaser.Scene {
     }
 
     create() { //carga los assets en pantalla desde memoria
+
+        //STORES EVERY INPUT KEY WE NEED
+        this.keyboardKeys = this.input.keyboard.addKeys({
+            a: Phaser.Input.Keyboard.KeyCodes.A,
+            h: Phaser.Input.Keyboard.KeyCodes.H,
+            q: Phaser.Input.Keyboard.KeyCodes.Q
+        });
+
         this.bg1 = this.add.tileSprite(0, 0, 1015, 192, 'background1').setOrigin(0);
         this.music = this.sound.add('bgMusic', { volume: .3, loop: true });
         this.punchSound = this.sound.add('punch');
         this.music.play();
-        this.healthKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.H);
+
         this.player = this.physics.add.sprite(config.width / 2, config.height * .7, 'player').setOrigin(.5);
         this.player.body.setSize(16, 37, true).setOffset(30, 10);
 
-        this.thumbsUpImage = this.add.sprite(config.width - 40, config.height / 2, 'thumbsUp').setOrigin(.5);
+        this.thumbsUpImage = this.add.sprite(config.width - 40, config.height / 2, 'thumbsUp');
         this.changeThumbsUp = false;
         this.thumbsUpImage.visible = false
 
         this.player.body.collideWorldBounds = true; //--> Collision with world border walls
         this.player.body.onWorldBounds = true; //--> On collision event
 
-        this.player.health = 6;
         this.isPlayerInAFight = false;
-
         this.wantsToAttack = false;
-        this.healthUI = this.add.sprite(0, 0, 'healthUI', this.player.health).setOrigin(0, -12);
-        this.healthUI.scaleX = (.7);
-        this.healthUI.scaleY = (.6);
-        this.healthUI.setScrollFactor(0);
+
+        //Stores the sprites of the player's health
+        this.health = [];
+        for (var i = 0; i < 14; i++) {
+            this.health[i] = this.add.sprite(40 + 4 * i, config.height - 25, 'health').setOrigin(0).setDisplaySize(3, 7);
+        }
+        this.player.health = this.health.length;
+
         this.attackHitbox = this.add.rectangle(config.width / 2 + 20, config.height * .68, 15, 10, 0xffffff, 0);
         this.physics.add.existing(this.attackHitbox);
         this.attackHitbox.body.enable = false;
 
         this.canAttack = true;
-
         this.DoOnePunch = true;
-        this.keyboardKeys = this.input.keyboard.addKeys({
-            a: Phaser.Input.Keyboard.KeyCodes.A
-        });
+
         this.cursorKeys = this.input.keyboard.createCursorKeys();
         this.attackFlipFlop = false;
         this.flipFlop = false;
@@ -76,13 +82,6 @@ class gameState extends Phaser.Scene {
 
         this.physics.add.overlap(this.attackHitbox, this.enemy, this.enemy.hit, null, this.enemy);
         this.physics.add.overlap(this.attackHitbox, this.enemy1, this.enemy1.hit, null, this.enemy1);
-        // this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A, false)
-        // this.input.keyboard.on("keydown_A", (e) => {
-        //     this.attackPlayerManager();
-        //  });
-        //var combo = this.input.keyboard.createCombo()
-        //  this.keyA = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
-        //this.keyB = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
     }
 
     createPlayerAnims() {
@@ -239,18 +238,32 @@ class gameState extends Phaser.Scene {
         this.updateThumbsUp();
 
         //INPUT TO TEST RECIEVE DAMAGE
-        if (Phaser.Input.Keyboard.JustDown(this.healthKey)) {
+        if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.h)) {
+            this.health[this.player.health - 1].visible = false;
             this.player.health--;
-            //this.healthUI.setFrame(this.player.health);
+            console.log("Health: ", this.player.health);
             this.checkPlayerHealth();
+        }
+
+        //INPUT TO TEST HEALING
+        if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.q)) {
+            if (this.player.health < 14)
+            {
+                this.player.health++;
+                this.health[this.player.health - 1].visible = true;
+                console.log("Health: ", this.player.health);
+            }
         }
     }
 
+    //CHECK IF PLAYER DIES
     checkPlayerHealth() {
         if (this.player.health <= 0) {
             this.player.body.reset(config.width / 10, config.height * .7);
-            this.player.health = 6;
-            this.healthUI.setFrame(this.player.health);
+            this.player.health = 14;
+            for (var i = 0; i < this.player.health; i++) {
+                this.health[i].visible = true;
+            }
         }
     }
 }
