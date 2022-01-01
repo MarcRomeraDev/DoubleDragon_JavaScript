@@ -20,6 +20,7 @@ class gameState extends Phaser.Scene {
         this.load.spritesheet('williams', 'WilliamSprites/williams.png', { frameWidth: 66, frameHeight: 39 });
         this.load.image('thumbsUp', 'Props/thumbsUp.png');
         this.load.image('health', 'HUD/health_bar.png');
+        this.load.image('heart', 'HUD/heart.png');
 
         //AUDIO
         this.load.setPath("assets/sounds/");
@@ -66,6 +67,17 @@ class gameState extends Phaser.Scene {
             this.health[i] = this.add.sprite(40 + 4 * i, config.height - 25, 'health').setOrigin(0).setDisplaySize(3, 7);
         }
         this.player.health = this.health.length;
+
+        //Stores the sprites of the player's hearts (levels)
+        this.hearts = [];
+        for (var i = 0; i < 3; i++) {
+            this.hearts[i] = this.add.sprite(39 + 12 * i, config.height - 15, 'heart').setOrigin(0).setDisplaySize(12, 9);
+            if (i > 0)
+            {
+                this.hearts[i].visible = false;
+            }
+        }
+        this.player.hearts = this.hearts.length;
 
         this.attackHitbox = this.add.rectangle(config.width / 2 + 20, config.height * .68, 15, 10, 0xffffff, 0);
         this.physics.add.existing(this.attackHitbox);
