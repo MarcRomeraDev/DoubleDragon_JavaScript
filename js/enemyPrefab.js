@@ -2,27 +2,29 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
     constructor(_scene, _posX, _posY, _tag, _dmg, _health) {
         super(_scene, _posX, _posY, _tag);
         // _scene.add.existing(this);
+        
+        this.eType = _tag;
+        this.scene = _scene;
+        this.maxHealth = _health;
+        this.dmg = _dmg;
+        this.init();
+    }
+    
+    init()
+    {
         this.eMoveState = "AWAY"; // States: AWAY, IN_RANGE, KNOCKED_DOWN 
         this.direction = 1;
         this.followY = false;
         this.followX = false;
 
-        this.eType = _tag;
         this.imFighting = false;
-        this.scene = _scene;
         this.isVulnerable = true;
         this.isAttacking = false;
         //Combat
         this.knockDownCounter = 3;
-        this.dmg = _dmg;
-        this.health = _health;
+        this.health = this.maxHealth;
         this.flipFlop = false;
-
-
-
-
     }
-
     preUpdate(time, delta, _enemy, _hero) {
         _enemy.depth = _enemy.y;
         if ((this.direction == 1 && _enemy.body.x - _hero.body.x > 0) || (this.direction == -1 && _enemy.body.x - _hero.body.x < 0)) {
@@ -35,14 +37,13 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
 
         super.preUpdate(time, delta);
     }
-
     takeDmg(_enemy, _dmgTaken) {
         if (this.isVulnerable) {
             _enemy.anims.play(this.eType + 'run', false);
             this.health -= _dmgTaken;
             this.isVulnerable = false;
             _enemy.body.velocity.y = 0;
-            console.log(this.health);
+            _enemy.body.velocity.x = 0;
             if (this.health > 0) {
                 this.knockDownCounter--;
                 if (this.knockDownCounter >= 0) {
@@ -65,7 +66,7 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
                 this.startAFight(false);
                 _enemy.anims.play(this.eType + 'die', true);
                 this.eMoveState = "DEAD";
-                this.attackingTimer = this.scene.time.delayedCall(gamePrefs.knockDownTimer, _enemy.destroy, [], _enemy);
+                this.attackingTimer = this.scene.time.delayedCall(gamePrefs.knockDownTimer, this.scene.waveSystem.enemyDied, [this], this.scene.waveSystem);
 
             }
         }
@@ -86,7 +87,6 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
     attack(_enemy) {
         if (!this.isAttacking && this.eMoveState == "IN_RANGE" && this.isVulnerable) {
             _enemy.anims.play(this.eType + 'run', false);
-            console.log("Attack!");
             this.scene.punchSound.play();
             this.flipFlop = !this.flipFlop;
             if (this.flipFlop) { //right punch
@@ -241,16 +241,6 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
         this.imFighting = _boolean;
         this.scene.isPlayerInAFight = _boolean;
     }
-    hit(_enemy, _hero) {
-        if (_enemy.body.touching.up && _hero.body.touching.down) {
-            _hero.body.velocity.y = -gameOptions.heroJump;
-            this.destroy();
-        } else {
-            _hero.body.reset(65, 100);
-            this.scene.cameras.main.shake(500, 0.05);
-            this.scene.cameras.main.flash(500, 255, 0, 0);
-        }
-
-    }
+  
 
 }

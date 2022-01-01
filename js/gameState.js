@@ -77,11 +77,13 @@ class gameState extends Phaser.Scene {
         this.createWilliamsAnims();
         this.isAttacking = false;
         this.player.setFrame(1);
-        this.enemy = new enemyWilliams(this, config.width / 3, 304, 'williams', this.player, 3, 10);
-        this.enemy1 = new enemyWilliams(this, config.width / 1, 304, 'williams', this.player, 3, 10);
+       
+        this.waveSystem = new waveSystemManager(this);
+        
+        this.physics.add.overlap(this.attackHitbox,this.waveSystem.enemies,this.waveSystem.dmgEnemy,null,this.waveSystem);
 
-        this.physics.add.overlap(this.attackHitbox, this.enemy, this.enemy.hit, null, this.enemy);
-        this.physics.add.overlap(this.attackHitbox, this.enemy1, this.enemy1.hit, null, this.enemy1);
+       // this.physics.add.overlap(this.attackHitbox, this.enemy, this.enemy.hit, null, this.enemy);
+       // this.physics.add.overlap(this.attackHitbox, this.enemy1, this.enemy1.hit, null, this.enemy1);
     }
 
     createPlayerAnims() {
@@ -254,6 +256,14 @@ class gameState extends Phaser.Scene {
                 console.log("Health: ", this.player.health);
             }
         }
+    }
+    advanceInScene()
+    {
+        this.numMapSubdivisions -= this.count;
+        this.flipFlop = true;
+        this.canAdvance = true;
+        this.changeThumbsUp = true;
+        this.thumbsUpFlipFlop = false;
     }
 
     //CHECK IF PLAYER DIES
