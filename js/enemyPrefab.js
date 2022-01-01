@@ -45,6 +45,9 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
     }
     takeDmg(_enemy, _dmgTaken) {
         if (this.isVulnerable && Phaser.Math.Distance.Between(0, _enemy.body.y, 0, this.scene.player.body.y - gamePrefs.heightPunchingThreshold) < 1) {
+            this.scene.updateExp(20); //-->UPDATE PLAYER EXP
+            this.scene.updateScore(); //--> UPDATE PLAYER SCORE AND HIGH SCORE
+
             _enemy.anims.play(this.eType + 'run', false);
             this.health -= _dmgTaken;
             this.isVulnerable = false;

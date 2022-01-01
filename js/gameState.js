@@ -32,7 +32,6 @@ class gameState extends Phaser.Scene {
         this.gameTime = 200;
         this.exp = 0;
         this.score = 0;
-        this.highScore = 0;
 
         this.timer = this.time.addEvent({ delay: 1000, callback: function () { this.gameTime--; }, callbackScope: this, loop: true });
 
@@ -73,12 +72,11 @@ class gameState extends Phaser.Scene {
         this.hearts = [];
         for (var i = 0; i < 3; i++) {
             this.hearts[i] = this.add.sprite(39 + 12 * i, config.height - 15, 'heart').setOrigin(0).setDisplaySize(12, 9);
-            if (i > 0)
-            {
+            if (i > 0) {
                 this.hearts[i].visible = false;
             }
         }
-        this.player.hearts = this.hearts.length;
+        this.player.level = 1;
 
         this.attackHitbox = this.add.rectangle(config.width / 2 + 20, config.height * .68, 15, 10, 0xffffff, 0);
         this.physics.add.existing(this.attackHitbox);
@@ -97,29 +95,42 @@ class gameState extends Phaser.Scene {
         this.createWilliamsAnims();
         this.isAttacking = false;
         this.player.setFrame(1);
-       
-        this.waveSystem = new waveSystemManager(this);
-        
-        this.physics.add.overlap(this.attackHitbox,this.waveSystem.enemies,this.waveSystem.dmgEnemy,null,this.waveSystem);
 
-       // this.physics.add.overlap(this.attackHitbox, this.enemy, this.enemy.hit, null, this.enemy);
-       // this.physics.add.overlap(this.attackHitbox, this.enemy1, this.enemy1.hit, null, this.enemy1);
+        this.waveSystem = new waveSystemManager(this);
+
+        this.physics.add.overlap(this.attackHitbox, this.waveSystem.enemies, this.waveSystem.dmgEnemy, null, this.waveSystem);
+
         this.playerText = this.add.text(20, config.height - 20, '1P', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //player
         this.expText = this.add.text(20, config.height - 12, this.exp, { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //exp
-        this.timeText = this.add.text(config.width / 2 + 10, config.height - 12, 'TIME ', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //time
-        this.scoreText = this.add.text(config.width - 60, config.height - 12, '1P ', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //time
-        this.scoreNumbersText = this.add.text(config.width - 25, config.height - 12, this.score, { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //time
-        this.highScoreText = this.add.text(config.width - 60, config.height - 20, 'HI ', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //time
-        this.highScoreNumbersText = this.add.text(config.width - 25, config.height - 20, this.score, { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //time
+        this.timeText = this.add.text(config.width / 2 + 10, config.height - 12, 'TIME ', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //game time
+        this.scoreText = this.add.text(config.width - 60, config.height - 12, '1P ', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //score text
+        this.scoreNumbersText = this.add.text(config.width - 25, config.height - 12, this.score, { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //score num
+        this.highScoreText = this.add.text(config.width - 60, config.height - 20, 'HI ', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //highscore text
+        this.highScoreNumbersText = this.add.text(config.width - 25, config.height - 20, this.score, { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //highscore num
     }
 
     updateGameTimer() {
         this.timeText.setText('TIME ' + this.gameTime);
     }
 
-    updateExp() {
-        this.exp += 20;
-        this.timeText.setText('TIME ' + this.gameTime);
+    updateExp(exp) {
+        this.exp += exp;
+        this.expText.setText(this.exp.toString());
+    }
+
+    updateScore() {
+        this.score += 50; //SCORE EARNED DEPENDS ON ATTACK USED
+        this.scoreNumbersText.setText(this.score.toString());
+        this.highScoreNumbersText.setText(this.score.toString());
+    }
+
+    updateLevel() {
+        if (this.exp >= 1000) {
+            this.player.level++;
+            this.exp = 0;
+            this.expText.setText(this.exp.toString());
+            this.hearts[this.player.level - 1].visible = true;
+        }
     }
 
     createPlayerAnims() {
@@ -192,13 +203,12 @@ class gameState extends Phaser.Scene {
                         this.bg1.tilePositionX += gamePrefs.backgroundSpeed; //--> Background scroll speed
                         this.player.body.velocity.x = 0.001;
 
-                       this.waveSystem.moveAllEnemiesWhenWalking();
+                        this.waveSystem.moveAllEnemiesWhenWalking();
 
                     }
-                    if(this.bg1.tilePositionX > 1015 - (config.width * this.numMapSubdivisions))
-                    {
+                    if (this.bg1.tilePositionX > 1015 - (config.width * this.numMapSubdivisions)) {
                         this.waveSystem.sceneMovementFinishedEvent();
-                       
+
                     }
                 }
                 else {
@@ -213,10 +223,9 @@ class gameState extends Phaser.Scene {
     }
     iddlePlayer() {
         this.player.setFrame(1);
-       
+
     }
-    resetHitbox()
-    {
+    resetHitbox() {
         this.attackHitbox.body.enable = false; //--> Removes hitbox of attack when attack ends
     }
     attackPlayerManager() {
@@ -268,25 +277,13 @@ class gameState extends Phaser.Scene {
     }
 
     update(time, delta) {
+        this.updateLevel();
         this.updateGameTimer();
         this.movePlayerManager();
         this.player.depth = this.player.y;
         this.updatePlayerHitbox();
         this.attackPlayerManager();
-        this.physics.world.on('worldbounds', (body, up, down, left, right) => {
-        });
-
-        //INPUT TO ACTIVATE FLAG TO SCROLL BACKGROUND
-        /*if (this.cursorKeys.space.isDown) {
-            if (!this.flipFlop) {
-                this.numMapSubdivisions -= this.count;
-                this.flipFlop = true;
-                this.canAdvance = true;
-                this.changeThumbsUp = true;
-                this.thumbsUpFlipFlop = false;
-            }
-        }*/
-
+        
         this.updateThumbsUp();
 
         //INPUT TO TEST RECIEVE DAMAGE
@@ -306,8 +303,7 @@ class gameState extends Phaser.Scene {
             }
         }
     }
-    advanceInScene()
-    {
+    advanceInScene() {
         this.numMapSubdivisions -= this.count;
         this.flipFlop = true;
         this.canAdvance = true;
