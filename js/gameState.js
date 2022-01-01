@@ -11,7 +11,7 @@ class gameState extends Phaser.Scene {
     preload() { //carga los assets en memoria
 
         //FONTS
-        this.load.css('fonts', 'js/font.css');
+        this.load.css('fonts', 'css/font.css');
 
         //SPRITES
         this.load.setPath("assets/sprites/");
@@ -28,6 +28,10 @@ class gameState extends Phaser.Scene {
     }
 
     create() { //carga los assets en pantalla desde memoria
+        this.gameTime = 200;
+        this.exp = 0;
+
+        this.timer = this.time.addEvent({ delay: 1000, callback: function () { this.gameTime--; }, callbackScope: this, loop: true });
 
         //STORES EVERY INPUT KEY WE NEED
         this.keyboardKeys = this.input.keyboard.addKeys({
@@ -86,12 +90,21 @@ class gameState extends Phaser.Scene {
 
         //IN-GAME UI TEXT
         this.playerText = this.add.text(20, config.height - 20, '1P', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //player
-        this.expText = this.add.text(20, config.height - 12, '60', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //exp
-        this.timeText = this.add.text(config.width/2 + 10, config.height - 12, 'TIME 199', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //time
+        this.expText = this.add.text(20, config.height - 12, this.exp, { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //exp
+        this.timeText = this.add.text(config.width / 2 + 10, config.height - 12, 'TIME ', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //time
         this.scoreText = this.add.text(config.width - 60, config.height - 12, '1P ', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //time
         this.scoreNumbersText = this.add.text(config.width - 25, config.height - 12, '150', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //time
         this.highScoreText = this.add.text(config.width - 60, config.height - 20, 'HI ', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //time
         this.highScoreNumbersText = this.add.text(config.width - 25, config.height - 20, '150', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //time
+    }
+
+    updateGameTimer() {
+        this.timeText.setText('TIME ' + this.gameTime);
+    }
+
+    updateExp() {
+        this.exp += 20;
+        this.timeText.setText('TIME ' + this.gameTime);
     }
 
     createPlayerAnims() {
@@ -228,6 +241,7 @@ class gameState extends Phaser.Scene {
     }
 
     update(time, delta) {
+        this.updateGameTimer();
         this.movePlayerManager();
         this.updatePlayerHitbox();
         this.attackPlayerManager();
