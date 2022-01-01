@@ -61,6 +61,10 @@ class enemyWilliams extends enemyPrefab
             this.body.setOffset(26, 0);
         }
     }
+    resetEnemy()
+    {
+        super.init();
+    }
 
     hit()
     {
