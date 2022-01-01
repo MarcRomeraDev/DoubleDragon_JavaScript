@@ -5,12 +5,13 @@ class gameState extends Phaser.Scene {
         super(
             {
                 key: "gameState"
-
             });
     }
 
     preload() { //carga los assets en memoria
-        this.cameras.main.setBackgroundColor("#000000");
+
+        //FONTS
+        this.load.css('fonts', 'js/font.css');
 
         //SPRITES
         this.load.setPath("assets/sprites/");
@@ -82,6 +83,8 @@ class gameState extends Phaser.Scene {
 
         this.physics.add.overlap(this.attackHitbox, this.enemy, this.enemy.hit, null, this.enemy);
         this.physics.add.overlap(this.attackHitbox, this.enemy1, this.enemy1.hit, null, this.enemy1);
+
+        this.expText = this.add.text(config.width / 2, config.height - 20, 'Hello world', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize();
     }
 
     createPlayerAnims() {
@@ -247,8 +250,7 @@ class gameState extends Phaser.Scene {
 
         //INPUT TO TEST HEALING
         if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.q)) {
-            if (this.player.health < 14)
-            {
+            if (this.player.health < 14) {
                 this.player.health++;
                 this.health[this.player.health - 1].visible = true;
                 console.log("Health: ", this.player.health);
