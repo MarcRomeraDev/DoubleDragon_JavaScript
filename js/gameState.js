@@ -84,7 +84,14 @@ class gameState extends Phaser.Scene {
         this.physics.add.overlap(this.attackHitbox, this.enemy, this.enemy.hit, null, this.enemy);
         this.physics.add.overlap(this.attackHitbox, this.enemy1, this.enemy1.hit, null, this.enemy1);
 
-        this.expText = this.add.text(config.width / 2, config.height - 20, 'Hello world', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize();
+        //IN-GAME UI TEXT
+        this.playerText = this.add.text(20, config.height - 20, '1P', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //player
+        this.expText = this.add.text(20, config.height - 12, '60', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //exp
+        this.timeText = this.add.text(config.width/2 + 10, config.height - 12, 'TIME 199', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //time
+        this.scoreText = this.add.text(config.width - 60, config.height - 12, '1P ', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //time
+        this.scoreNumbersText = this.add.text(config.width - 25, config.height - 12, '150', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //time
+        this.highScoreText = this.add.text(config.width - 60, config.height - 20, 'HI ', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //time
+        this.highScoreNumbersText = this.add.text(config.width - 25, config.height - 20, '150', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //time
     }
 
     createPlayerAnims() {
