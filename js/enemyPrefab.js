@@ -92,7 +92,7 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
     attack(_enemy) {
         if (!this.isAttacking && this.eMoveState == "IN_RANGE" && this.isVulnerable) {
             _enemy.anims.play(this.eType + 'run', false);
-            this.scene.punchSound.play();
+            this.scene.ePunchSound.play();
             this.flipFlop = !this.flipFlop;
             if (this.flipFlop) { //right punch
                 _enemy.setFrame(4);
