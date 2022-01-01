@@ -38,6 +38,7 @@ class gameState extends Phaser.Scene {
         this.bg1 = this.add.tileSprite(0, 0, 1015, 192, 'background1').setOrigin(0);
         this.music = this.sound.add('bgMusic', { volume: .3, loop: true });
         this.punchSound = this.sound.add('punch');
+        this.ePunchSound = this.sound.add('punch');
         this.music.play();
 
         this.player = this.physics.add.sprite(config.width / 2, config.height * .7, 'player').setOrigin(.5);
