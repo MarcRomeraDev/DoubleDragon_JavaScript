@@ -77,11 +77,13 @@ class gameState extends Phaser.Scene {
         this.createWilliamsAnims();
         this.isAttacking = false;
         this.player.setFrame(1);
-        this.enemy = new enemyWilliams(this, config.width / 3, 304, 'williams', this.player, 3, 10);
-        this.enemy1 = new enemyWilliams(this, config.width / 1, 304, 'williams', this.player, 3, 10);
+       
+        this.waveSystem = new waveSystemManager(this);
+        
+        this.physics.add.overlap(this.attackHitbox,this.waveSystem.enemies,this.waveSystem.dmgEnemy,null,this.waveSystem);
 
-        this.physics.add.overlap(this.attackHitbox, this.enemy, this.enemy.hit, null, this.enemy);
-        this.physics.add.overlap(this.attackHitbox, this.enemy1, this.enemy1.hit, null, this.enemy1);
+       // this.physics.add.overlap(this.attackHitbox, this.enemy, this.enemy.hit, null, this.enemy);
+       // this.physics.add.overlap(this.attackHitbox, this.enemy1, this.enemy1.hit, null, this.enemy1);
     }
 
     createPlayerAnims() {
@@ -151,8 +153,16 @@ class gameState extends Phaser.Scene {
                     if (this.player.body.x > config.width * 2 / 3) {
                         this.changeThumbsUp = false;
                         this.thumbsUpImage.visible = false
-                        this.bg1.tilePositionX += .5; //--> Background scroll speed
+                        this.bg1.tilePositionX += gamePrefs.backgroundSpeed; //--> Background scroll speed
                         this.player.body.velocity.x = 0.001;
+
+                       this.waveSystem.moveAllEnemiesWhenWalking();
+
+                    }
+                    if(this.bg1.tilePositionX > 1015 - (config.width * this.numMapSubdivisions))
+                    {
+                        this.waveSystem.sceneMovementFinishedEvent();
+                       
                     }
                 }
                 else {
@@ -167,9 +177,12 @@ class gameState extends Phaser.Scene {
     }
     iddlePlayer() {
         this.player.setFrame(1);
+       
+    }
+    resetHitbox()
+    {
         this.attackHitbox.body.enable = false; //--> Removes hitbox of attack when attack ends
     }
-
     attackPlayerManager() {
 
         if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.a)) {
@@ -199,6 +212,7 @@ class gameState extends Phaser.Scene {
             this.physics.world.add(this.attackHitbox.body); //--> Adds hitbox to the attack when pressing input
 
             this.AttackingTimer = this.time.delayedCall(gamePrefs.attackRate, this.resetAttackTimer, [], this);
+            this.HitBoxTimer = this.time.delayedCall(gamePrefs.punchCollisionDuration, this.resetHitbox, [], this);
         }
     }
 
@@ -219,13 +233,14 @@ class gameState extends Phaser.Scene {
 
     update(time, delta) {
         this.movePlayerManager();
+        this.player.depth = this.player.y;
         this.updatePlayerHitbox();
         this.attackPlayerManager();
         this.physics.world.on('worldbounds', (body, up, down, left, right) => {
         });
 
         //INPUT TO ACTIVATE FLAG TO SCROLL BACKGROUND
-        if (this.cursorKeys.space.isDown) {
+        /*if (this.cursorKeys.space.isDown) {
             if (!this.flipFlop) {
                 this.numMapSubdivisions -= this.count;
                 this.flipFlop = true;
@@ -233,7 +248,7 @@ class gameState extends Phaser.Scene {
                 this.changeThumbsUp = true;
                 this.thumbsUpFlipFlop = false;
             }
-        }
+        }*/
 
         this.updateThumbsUp();
 
@@ -254,6 +269,14 @@ class gameState extends Phaser.Scene {
                 console.log("Health: ", this.player.health);
             }
         }
+    }
+    advanceInScene()
+    {
+        this.numMapSubdivisions -= this.count;
+        this.flipFlop = true;
+        this.canAdvance = true;
+        this.changeThumbsUp = true;
+        this.thumbsUpFlipFlop = false;
     }
 
     //CHECK IF PLAYER DIES
