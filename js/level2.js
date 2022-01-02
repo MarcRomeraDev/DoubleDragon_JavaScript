@@ -3,6 +3,7 @@ class level2 extends Phaser.Scene {
         super({ key: "level2" });
     }
 
+    //RECIEVES DATA WHEN CREATING SCENE
     init(data) {
         this.playerData = data.player;
     }
@@ -30,6 +31,7 @@ class level2 extends Phaser.Scene {
         }
     }
 
+    //UPDATES PLAYER INFO WITH DATA RECIEVED ON SCENE CREATION
     updatePlayerData() {
         this.player.exp = this.playerData.exp;
         this.player.score = this.playerData.score;
@@ -50,7 +52,6 @@ class level2 extends Phaser.Scene {
 
         this.canChangeScene = true;
         this.gameTime = 200;
-        //this.thumbsUpTimer;
 
         this.numBackground = 1;
 
@@ -154,17 +155,6 @@ class level2 extends Phaser.Scene {
         });
     }
 
-    // updateThumbsUp() {
-    //     if (this.changeThumbsUp) {
-    //         !this.thumbsUpFlipFlop ? this.thumbsUpImage.visible = true : this.thumbsUpImage.visible = false;
-    //         this.thumbsUpFlipFlop = !this.thumbsUpFlipFlop;
-    //         this.changeThumbsUp = false;
-
-    //         //Timer in ms to call function that triggers swap between backgrounds
-    //         this.thumbsUpTimer = this.time.delayedCall(450, function changeThumbsUpVisibility() { this.changeThumbsUp = true }, [], this);
-    //     }
-    // }
-
     update() {
         this.updateBackground();
         this.updateLevel();
@@ -189,14 +179,6 @@ class level2 extends Phaser.Scene {
             }
         }
     }
-
-    // advanceInScene() {
-    //     this.numMapSubdivisions -= this.count;
-    //     this.flipFlop = true;
-    //     this.canAdvance = true;
-    //     this.changeThumbsUp = true;
-    //     this.thumbsUpFlipFlop = false;
-    // }
 
     //CHECK IF PLAYER DIES
     checkPlayerHealth() {
