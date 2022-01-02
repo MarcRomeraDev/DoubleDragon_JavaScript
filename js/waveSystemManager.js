@@ -125,7 +125,7 @@ class waveSystemManager extends Phaser.GameObjects.Sprite {
                 this.enemies.remove(_enemy);
                 switch (_type) {
                     case 'williams':
-                        _enemy = new enemyWilliams(this.scene, _posX, _posY, _type, this.scene.player, 3, 1);
+                        _enemy = new enemyWilliams(this.scene, _posX, _posY, _type, this.scene.player, 3, 12);
                         break;
                     case 'lindas':
                         _enemy = new enemyWilliams(this.scene, _posX, _posY, 'williams', this.scene.player, 3, 1);
