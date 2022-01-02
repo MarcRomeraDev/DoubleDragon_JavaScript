@@ -1,34 +1,58 @@
-class gameState extends Phaser.Scene {
+class level2 extends Phaser.Scene {
     constructor() { //crea la escena
-        super(
-            {
-                key: "gameState"
-            });
+        super({ key: "level2" });
+    }
+
+    init(data) {
+        this.playerData = data.player;
     }
 
     preload() { //carga los assets en memoria
-
-        //FONTS
-        this.load.css('fonts', 'css/font.css');
-
         //SPRITES
         this.load.setPath("assets/sprites/");
-        this.load.image('background1', 'Mission1BackgroundSprites/1.png');
-        this.load.spritesheet('player', 'BillySprites/CharacterSpritesheet.png', { frameWidth: 72, frameHeight: 46 });
-        this.load.spritesheet('williams', 'WilliamSprites/williams.png', { frameWidth: 66, frameHeight: 39 });
-        this.load.image('thumbsUp', 'Props/thumbsUp.png');
-        this.load.image('health', 'HUD/health_bar.png');
-        this.load.image('heart', 'HUD/heart.png');
+        this.load.image('background2.1', 'Mission1BackgroundSprites/2.png');
+        this.load.image('background2.2', 'Mission1BackgroundSprites/3.png');
+        this.load.image('background2.3', 'Mission1BackgroundSprites/4.png');
+    }
 
-        //AUDIO
-        this.load.setPath("assets/sounds/");
-        this.load.audio('bgMusic', 'music/mission1.mp3');
-        this.load.audio('punch', 'effects/punch.ogg');
+    updateBackground() {
+        if (this.canChangeScene) {
+            this.canChangeScene = false;
+            this.numBackground++;
+            this.background = this.add.tileSprite(0, 0, 256, 192, 'background2.' + this.numBackground).setOrigin(0);
+
+            if (this.numBackground >= 3) {
+                this.numBackground = 0;
+            }
+
+            //Timer in ms to call function that triggers swap between backgrounds
+            this.changeBgTimer = this.time.delayedCall(450, function changeBackground() { this.canChangeScene = true }, [], this);
+        }
+    }
+
+    updatePlayerData() {
+        this.player.exp = this.playerData.exp;
+        this.player.score = this.playerData.score;
+        this.player.level = this.playerData.level;
+        this.player.health = this.playerData.health;
+        this.player.body.reset(config.width / 10, config.height / 2);
     }
 
     create() { //carga los assets en pantalla desde memoria
+        this.background = this.add.tileSprite(0, 0, 248, 192, 'background2.1').setOrigin(0.03, 0);
+        this.punchSound = this.sound.add('punch');
+        this.ePunchSound = this.sound.add('punch');
+        this.music = this.sound.add('bgMusic', { volume: .3, loop: true });
+        this.music.play();
+
+        this.player = new character(this, config.width / 2, config.height * .7, 'player');
+        this.updatePlayerData();
+
+        this.canChangeScene = true;
         this.gameTime = 200;
-        this.thumbsUpTimer;
+        //this.thumbsUpTimer;
+
+        this.numBackground = 1;
 
         this.timer = this.time.addEvent({ delay: 1000, callback: function () { this.gameTime--; }, callbackScope: this, loop: true });
 
@@ -37,18 +61,6 @@ class gameState extends Phaser.Scene {
             h: Phaser.Input.Keyboard.KeyCodes.H,
             q: Phaser.Input.Keyboard.KeyCodes.Q
         });
-
-        this.bg1 = this.add.tileSprite(0, 0, 1015, 192, 'background1').setOrigin(0);
-        this.music = this.sound.add('bgMusic', { volume: .3, loop: true });
-        this.punchSound = this.sound.add('punch');
-        this.ePunchSound = this.sound.add('punch');
-        this.music.play();
-
-        this.player = new character(this, config.width / 2, config.height * .7, 'player');
-
-        this.thumbsUpImage = this.add.sprite(config.width - 40, config.height / 2, 'thumbsUp');
-        this.changeThumbsUp = false;
-        this.thumbsUpImage.visible = false
 
         this.isPlayerInAFight = false;
 
@@ -63,21 +75,14 @@ class gameState extends Phaser.Scene {
         this.hearts = [];
         for (var i = 0; i < 3; i++) {
             this.hearts[i] = this.add.sprite(39 + 12 * i, config.height - 15, 'heart').setOrigin(0).setDisplaySize(12, 9);
-            if (i > 0) {
+            if (i > this.player.level - 1) {
                 this.hearts[i].visible = false;
             }
         }
-
-        this.flipFlop = false;
-        this.numMapSubdivisions = 1015 / config.width;
-        this.count = this.numMapSubdivisions / 4;
-        this.canAdvance = false;
         this.createPlayerAnims();
-        this.createWilliamsAnims();
+        //this.createWilliamsAnims();
 
-        this.waveSystem = new waveSystemManager(this);
-
-        this.physics.add.overlap(this.player.attackHitbox, this.waveSystem.enemies, this.waveSystem.dmgEnemy, null, this.waveSystem);
+        //this.physics.add.overlap(this.player.attackHitbox, this.waveSystem.enemies, this.waveSystem.dmgEnemy, null, this.waveSystem);
 
         this.playerText = this.add.text(20, config.height - 20, '1P', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //player
         this.expText = this.add.text(20, config.height - 12, this.player.exp, { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //exp
@@ -92,33 +97,26 @@ class gameState extends Phaser.Scene {
         this.physics.add.overlap(this.player, this.doorTrigger, this.changeScene, null, this);
     }
 
-    changeScene() {
-        this.music.stop();
-        this.scene.start('level2', {
-            player: this.player
-        });
-    }
-
     updateGameTimer() {
         this.timeText.setText('TIME ' + this.gameTime);
     }
 
     updateExp(exp) {
-        this.player.exp += exp;
-        this.expText.setText(this.player.exp.toString());
+        this.exp += exp;
+        this.expText.setText(this.exp.toString());
     }
 
     updateScore() {
-        this.player.score += 50; //SCORE EARNED DEPENDS ON ATTACK USED
-        this.scoreNumbersText.setText(this.player.score.toString());
-        this.highScoreNumbersText.setText(this.player.score.toString());
+        this.score += 50; //SCORE EARNED DEPENDS ON ATTACK USED
+        this.scoreNumbersText.setText(this.score.toString());
+        this.highScoreNumbersText.setText(this.score.toString());
     }
 
     updateLevel() {
-        if (this.player.exp >= 1000) {
+        if (this.exp >= 1000) {
             this.player.level++;
-            this.player.exp = 0;
-            this.expText.setText(this.player.exp.toString());
+            this.exp = 0;
+            this.expText.setText(this.exp.toString());
             this.hearts[this.player.level - 1].visible = true;
         }
     }
@@ -156,22 +154,22 @@ class gameState extends Phaser.Scene {
         });
     }
 
-    updateThumbsUp() {
-        if (this.changeThumbsUp) {
-            !this.thumbsUpFlipFlop ? this.thumbsUpImage.visible = true : this.thumbsUpImage.visible = false;
-            this.thumbsUpFlipFlop = !this.thumbsUpFlipFlop;
-            this.changeThumbsUp = false;
+    // updateThumbsUp() {
+    //     if (this.changeThumbsUp) {
+    //         !this.thumbsUpFlipFlop ? this.thumbsUpImage.visible = true : this.thumbsUpImage.visible = false;
+    //         this.thumbsUpFlipFlop = !this.thumbsUpFlipFlop;
+    //         this.changeThumbsUp = false;
 
-            //Timer in ms to call function that triggers swap between backgrounds
-            this.thumbsUpTimer = this.time.delayedCall(450, function changeThumbsUpVisibility() { this.changeThumbsUp = true }, [], this);
-
-        }
-    }
+    //         //Timer in ms to call function that triggers swap between backgrounds
+    //         this.thumbsUpTimer = this.time.delayedCall(450, function changeThumbsUpVisibility() { this.changeThumbsUp = true }, [], this);
+    //     }
+    // }
 
     update() {
+        this.updateBackground();
         this.updateLevel();
         this.updateGameTimer();
-        this.updateThumbsUp();
+        //this.updateThumbsUp();
         this.player.updatePlayer();
 
         //INPUT TO TEST RECIEVE DAMAGE
@@ -192,13 +190,13 @@ class gameState extends Phaser.Scene {
         }
     }
 
-    advanceInScene() {
-        this.numMapSubdivisions -= this.count;
-        this.flipFlop = true;
-        this.canAdvance = true;
-        this.changeThumbsUp = true;
-        this.thumbsUpFlipFlop = false;
-    }
+    // advanceInScene() {
+    //     this.numMapSubdivisions -= this.count;
+    //     this.flipFlop = true;
+    //     this.canAdvance = true;
+    //     this.changeThumbsUp = true;
+    //     this.thumbsUpFlipFlop = false;
+    // }
 
     //CHECK IF PLAYER DIES
     checkPlayerHealth() {

@@ -63,6 +63,7 @@ class waveSystemManager extends Phaser.GameObjects.Sprite {
                     this.createEnemy(-20, (config.height * 2 / 3), 'lindas');
                     break;
                 case 15:
+                    this.scene.physics.add.existing(this.scene.doorTrigger);
                     console.log('Opens door TO NEXT LEVEL @ryan palazon TO DO');
                 break;
                 default:
