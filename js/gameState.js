@@ -1,5 +1,3 @@
-
-
 class gameState extends Phaser.Scene {
     constructor() { //crea la escena
         super(
@@ -56,7 +54,6 @@ class gameState extends Phaser.Scene {
 
         this.isPlayerInAFight = false;
 
-
         //Stores the sprites of the player's health
         this.health = [];
         for (var i = 0; i < 14; i++) {
@@ -91,6 +88,19 @@ class gameState extends Phaser.Scene {
         this.scoreNumbersText = this.add.text(config.width - 25, config.height - 12, this.score, { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //score num
         this.highScoreText = this.add.text(config.width - 60, config.height - 20, 'HI ', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //highscore text
         this.highScoreNumbersText = this.add.text(config.width - 25, config.height - 20, this.score, { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //highscore num
+
+        this.doorTrigger = this.add.rectangle(config.width / 2 + 40, config.height / 2 - 5, 40, 10, 0xffffff, 0);
+        this.physics.add.existing(this.doorTrigger);
+        this.physics.world.remove(this.doorTrigger);
+        this.doorTrigger.body.enable = false;
+
+        this.physics.add.overlap(this.player, this.doorTrigger, this.changeScene, null, this);
+    }
+
+    changeScene() {
+        console.log("Overlap");
+        this.music.stop();
+        this.scene.start('gameState_1.2');
     }
 
     updateGameTimer() {
@@ -158,15 +168,15 @@ class gameState extends Phaser.Scene {
 
             //Timer in ms to call function that triggers swap between backgrounds
             this.thumbsUpTimer = this.time.delayedCall(450, function changeThumbsUpVisibility() { this.changeThumbsUp = true }, [], this);
-            
+
         }
     }
 
     update() {
-        this.player.updatePlayer();
         this.updateLevel();
         this.updateGameTimer();
         this.updateThumbsUp();
+        this.player.updatePlayer();
 
         //INPUT TO TEST RECIEVE DAMAGE
         if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.h)) {
