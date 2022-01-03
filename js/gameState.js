@@ -29,6 +29,9 @@ class gameState extends Phaser.Scene {
     create() { //carga los assets en pantalla desde memoria
         this.gameTime = 200;
         this.thumbsUpTimer;
+        this.maxY = config.height / 2 + 5;
+        this.minY = 2 / 3 * config.height + 5;
+        this.beltForce = -5;
 
         this.timer = this.time.addEvent({ delay: 1000, callback: function () { this.gameTime--; }, callbackScope: this, loop: true });
 
@@ -87,7 +90,7 @@ class gameState extends Phaser.Scene {
         this.highScoreText = this.add.text(config.width - 60, config.height - 20, 'HI ', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //highscore text
         this.highScoreNumbersText = this.add.text(config.width - 25, config.height - 20, this.player.score, { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //highscore num
 
-        this.doorTrigger = this.add.rectangle(config.width / 2 + 40, config.height / 2 - 5, 40, 10, 0xffffff, 0);
+        this.doorTrigger = this.add.rectangle(config.width / 2 + 40, config.height / 2, 40, 10, 0xffffff, 0);
 
         this.physics.add.overlap(this.player, this.doorTrigger, this.changeScene, null, this);
     }
@@ -164,15 +167,26 @@ class gameState extends Phaser.Scene {
 
             //Timer in ms to call function that triggers swap between backgrounds
             this.thumbsUpTimer = this.time.delayedCall(450, function changeThumbsUpVisibility() { this.changeThumbsUp = true }, [], this);
-
         }
     }
+
+    // updateConveyorBelt() {
+    //     if (this.player.body.y < config.height / 2 + 5 && this.player.body.y > config.height / 2 - 12) {
+    //         this.player.body.velocity.x += 30;
+    //         if (this.player.body.x > config.width - 100) {
+    //             this.player.body.gravity.y = 4000;
+    //             this.player.body.setVelocity(0);
+    //         }
+    //     }
+    // }
 
     update() {
         this.updateLevel();
         this.updateGameTimer();
         this.updateThumbsUp();
         this.player.updatePlayer();
+        //this.updateConveyorBelt();
+
 
         //INPUT TO TEST RECIEVE DAMAGE
         if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.h)) {
@@ -180,6 +194,7 @@ class gameState extends Phaser.Scene {
             this.player.health--;
             console.log("Health: ", this.player.health);
             this.checkPlayerHealth();
+            this.changeScene();
         }
 
         //INPUT TO TEST HEALING

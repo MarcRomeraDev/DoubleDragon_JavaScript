@@ -41,7 +41,7 @@ class level2 extends Phaser.Scene {
     }
 
     create() { //carga los assets en pantalla desde memoria
-        this.background = this.add.tileSprite(0, 0, 248, 192, 'background2.1').setOrigin(0.03, 0);
+        this.background = this.add.tileSprite(0, 0, config.width, 192, 'background2.1').setOrigin(0.03, 0);
         this.punchSound = this.sound.add('punch');
         this.ePunchSound = this.sound.add('punch');
         this.music = this.sound.add('bgMusic', { volume: .3, loop: true });
@@ -52,8 +52,11 @@ class level2 extends Phaser.Scene {
 
         this.canChangeScene = true;
         this.gameTime = 200;
+        this.maxY = config.height / 3 + 5;
+        this.minY = config.height / 2 + 15;
 
         this.numBackground = 1;
+
 
         this.timer = this.time.addEvent({ delay: 1000, callback: function () { this.gameTime--; }, callbackScope: this, loop: true });
 
@@ -82,7 +85,6 @@ class level2 extends Phaser.Scene {
         }
         this.createPlayerAnims();
         //this.createWilliamsAnims();
-
         //this.physics.add.overlap(this.player.attackHitbox, this.waveSystem.enemies, this.waveSystem.dmgEnemy, null, this.waveSystem);
 
         this.playerText = this.add.text(20, config.height - 20, '1P', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //player
@@ -93,9 +95,8 @@ class level2 extends Phaser.Scene {
         this.highScoreText = this.add.text(config.width - 60, config.height - 20, 'HI ', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //highscore text
         this.highScoreNumbersText = this.add.text(config.width - 25, config.height - 20, this.player.score, { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //highscore num
 
-        this.doorTrigger = this.add.rectangle(config.width / 2 + 40, config.height / 2 - 5, 40, 10, 0xffffff, 0);
-
-        this.physics.add.overlap(this.player, this.doorTrigger, this.changeScene, null, this);
+        //this.doorTrigger = this.add.rectangle(config.width / 2 + 40, config.height / 2 - 5, 40, 10, 0xffffff, 0);
+        //this.physics.add.overlap(this.player, this.doorTrigger, this.changeScene, null, this);
     }
 
     updateGameTimer() {
@@ -155,12 +156,25 @@ class level2 extends Phaser.Scene {
         });
     }
 
+    updateConveyorBelt() {
+        if (this.player.body.y < config.height / 2 + 5 && this.player.body.y > config.height / 2 - 12) {
+            this.player.body.velocity.x += 30;
+            if (this.player.body.x > config.width - 70) {
+                this.player.body.gravity.y = 4000;
+                this.player.body.gravity.x = 1000;
+                this.player.canMove = false;
+                this.player.body.setVelocity(0);
+                this.player.body.collideWorldBounds = false; //--> Collision with world border walls
+            }
+        }
+    }
+
     update() {
         this.updateBackground();
         this.updateLevel();
         this.updateGameTimer();
-        //this.updateThumbsUp();
         this.player.updatePlayer();
+        this.updateConveyorBelt();
 
         //INPUT TO TEST RECIEVE DAMAGE
         if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.h)) {
