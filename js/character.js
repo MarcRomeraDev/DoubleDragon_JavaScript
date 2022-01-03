@@ -22,7 +22,9 @@ class character extends Phaser.GameObjects.Sprite {
     this.scene.physics.add.existing(this.attackHitbox);
     this.attackHitbox.body.enable = false;
 
+    this.isDead = false;
     this.level = 1;
+    this.lifes = 2;
     this.health = 14;
     this.exp = 0;
     this.score = 0;
@@ -50,6 +52,20 @@ class character extends Phaser.GameObjects.Sprite {
   updatePlayerHitbox() {
     if (this.anims.currentFrame != null) {
       this.body.setSize(16, 37, true).setOffset(30, 10);
+    }
+  }
+
+  //KILLS PLAYER, RESETS HIM ON SCENE AND UPDATES PROPERTIES
+  kill() {
+    this.lifes--;
+    this.health = 14;
+    this.canMove = true;
+    this.collideWorldBounds = true;
+    this.body.gravity.y = 0;
+    this.isDead = false;
+    this.body.reset(config.width / 10, config.height / 2 + 20);
+    if (this.lifes < 0) {
+      this.visible = false;
     }
   }
 

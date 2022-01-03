@@ -24,6 +24,7 @@ class gameState extends Phaser.Scene {
         this.load.setPath("assets/sounds/");
         this.load.audio('bgMusic', 'music/mission1.mp3');
         this.load.audio('punch', 'effects/punch.ogg');
+        this.load.audio('gameOver', 'music/game_over.mp3');
     }
 
     create() { //carga los assets en pantalla desde memoria
@@ -33,7 +34,7 @@ class gameState extends Phaser.Scene {
         this.minY = 2 / 3 * config.height + 5;
         this.beltForce = -5;
 
-        this.timer = this.time.addEvent({ delay: 1000, callback: function () { this.gameTime--; }, callbackScope: this, loop: true });
+        this.gameTimer = this.time.addEvent({ delay: 1000, callback: function () { this.gameTime--; }, callbackScope: this, loop: true });
 
         //STORES EVERY INPUT KEY WE NEED
         this.keyboardKeys = this.input.keyboard.addKeys({
@@ -45,6 +46,7 @@ class gameState extends Phaser.Scene {
         this.music = this.sound.add('bgMusic', { volume: .3, loop: true });
         this.punchSound = this.sound.add('punch');
         this.ePunchSound = this.sound.add('punch');
+        this.gameOverMusic = this.sound.add('gameOver', { volume: .3, loop: false });
         this.music.play();
 
         this.player = new character(this, config.width / 2, config.height * .7, 'player');
@@ -89,8 +91,9 @@ class gameState extends Phaser.Scene {
         this.scoreNumbersText = this.add.text(config.width - 25, config.height - 12, this.player.score, { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //score num
         this.highScoreText = this.add.text(config.width - 60, config.height - 20, 'HI ', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //highscore text
         this.highScoreNumbersText = this.add.text(config.width - 25, config.height - 20, this.player.score, { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //highscore num
+        this.lifesText = this.add.text(config.width / 2 + 14, config.height - 20, 'P-2', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //game time       
 
-        this.doorTrigger = this.add.rectangle(config.width / 2 + 40, config.height / 2, 40, 10, 0xffffff, 0);
+        this.doorTrigger = this.add.rectangle(config.width / 2 + 40, config.height / 2 + 2, 40, 10, 0xffffff, 0);
 
         this.physics.add.overlap(this.player, this.doorTrigger, this.changeScene, null, this);
     }
@@ -170,31 +173,17 @@ class gameState extends Phaser.Scene {
         }
     }
 
-    // updateConveyorBelt() {
-    //     if (this.player.body.y < config.height / 2 + 5 && this.player.body.y > config.height / 2 - 12) {
-    //         this.player.body.velocity.x += 30;
-    //         if (this.player.body.x > config.width - 100) {
-    //             this.player.body.gravity.y = 4000;
-    //             this.player.body.setVelocity(0);
-    //         }
-    //     }
-    // }
-
     update() {
         this.updateLevel();
         this.updateGameTimer();
         this.updateThumbsUp();
         this.player.updatePlayer();
-        //this.updateConveyorBelt();
-
 
         //INPUT TO TEST RECIEVE DAMAGE
         if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.h)) {
             this.health[this.player.health - 1].visible = false;
             this.player.health--;
-            console.log("Health: ", this.player.health);
             this.checkPlayerHealth();
-            this.changeScene();
         }
 
         //INPUT TO TEST HEALING
@@ -202,7 +191,6 @@ class gameState extends Phaser.Scene {
             if (this.player.health < 14) {
                 this.player.health++;
                 this.health[this.player.health - 1].visible = true;
-                console.log("Health: ", this.player.health);
             }
         }
     }
@@ -218,10 +206,21 @@ class gameState extends Phaser.Scene {
     //CHECK IF PLAYER DIES
     checkPlayerHealth() {
         if (this.player.health <= 0) {
-            this.player.body.reset(config.width / 10, config.height * .7);
-            this.player.health = 14;
-            for (var i = 0; i < this.player.health; i++) {
-                this.health[i].visible = true;
+            this.player.kill();
+            this.music.play();
+            if (this.player.lifes >= 0) {
+                this.lifesText.setText("P-" + this.player.lifes);
+                for (var i = 0; i < this.player.health; i++) {
+                    this.health[i].visible = true;
+                }
+            }
+            else {
+                this.scene.pause();
+                this.music.stop();
+                this.timeText.setText("GAME OVER");
+                this.gameTimer.remove();
+                this.gameOverMusic.on('complete', function () { this.scene.start('menu'); }, this);
+                this.gameOverMusic.play();
             }
         }
     }
