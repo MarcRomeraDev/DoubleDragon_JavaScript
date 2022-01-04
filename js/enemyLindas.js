@@ -1,4 +1,4 @@
-class enemyWilliams extends enemyPrefab
+class enemyLindas extends enemyPrefab
 {
     constructor(_scene,_posX,_posY,_tag,character, dmg, health)
     {
@@ -7,7 +7,8 @@ class enemyWilliams extends enemyPrefab
 
         _scene.add.existing(this).setOrigin(.5);
         _scene.physics.world.enable(this);
-        this.body.setSize(16, 38, true);
+        this.body.setSize(16, 39, true);
+       
         this.flipHitBox();
         
         //_scene.physics.add.sprite(_posX, _posY, _tag).setOrigin(.5);
@@ -56,16 +57,41 @@ class enemyWilliams extends enemyPrefab
     {
         if(this.flipX)
         {
-            this.body.setOffset(25, 0);
+            this.body.setOffset(33, 0);
         }else{
-            this.body.setOffset(26, 0);
+            this.body.setOffset(27, 0);
         }
+      
+    }
+    giveWeapon()
+    {
+        this.setFrame(5);
+        super.setVulnerable(false);
+        this.body.velocity.x = 0;
+        this.body.velocity.y = 0;
+        super.giveWeapon();
+        this.getWeaponTimer = this.scene.time.delayedCall(500, super.setVulnerable, [true], this);
+   
+       // super.pickUpWeapon(this);
+    
+    }
+    dropWeapon()
+    {
+
+        super.dropWeapon();
     }
     resetEnemy()
     {
         super.init();
     }
-    giveWeapon(){}
+    attackWithWeapon()
+    {
+        this.scene.ePunchSound.play();
+        this.anims.play(this.eType + 'attackweapon', true);
+        super.enemyPunchTimer = this.scene.time.delayedCall(gamePrefs.whipDuration, super.resetEnemyFrameToIddle, [this], this);
+        super.attackingTimer = this.scene.time.delayedCall(gamePrefs.lindaWeaponAttackRate, super.setIsAttacking, [false], this);
+    }
+
 
     hit()
     {

@@ -6,6 +6,7 @@ class gameState extends Phaser.Scene {
             });
     }
 
+        this.load.spritesheet('lindas', 'LindaSprites/lindaSpriteSheet.png', { frameWidth: 76, frameHeight: 40 });
     create() { //carga los assets en pantalla desde memoria
         this.gameTime = 200;
         this.thumbsUpTimer;
@@ -58,9 +59,10 @@ class gameState extends Phaser.Scene {
         this.canAdvance = false;
         this.createPlayerAnims();
         this.createWilliamsAnims();
+        this.createLindasAnims();
 
         this.waveSystem = new waveSystemManager(this);
-
+        
         this.physics.add.overlap(this.player.attackHitbox, this.waveSystem.enemies, this.waveSystem.dmgEnemy, null, this.waveSystem);
 
         this.playerText = this.add.text(20, config.height - 20, '1P', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //player
@@ -164,6 +166,49 @@ class gameState extends Phaser.Scene {
         this.anims.create({
             key: 'williamsdie',
             frames: this.anims.generateFrameNumbers('williams', { start: 8, end: 9 }),
+            frameRate: 5,
+            yoyo: false,
+            repeat: 0
+        });
+    }
+    createLindasAnims() {
+        this.anims.create({
+            key: 'lindasrun',
+            frames: this.anims.generateFrameNumbers('lindas', { start: 0, end: 2 }),
+            frameRate: 5,
+            yoyo: true,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'lindasrunweapon',
+            frames: this.anims.generateFrameNumbers('lindas', { start: 15, end: 17 }),
+            frameRate: 5,
+            yoyo: true,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'lindasattackweapon',
+            frames: this.anims.generateFrameNumbers('lindas', { start: 5, end: 7 }),
+            frameRate: 5,
+            repeat: 0
+        });
+        this.anims.create({
+            key: 'lindastakeDmg',
+            frames: this.anims.generateFrameNumbers('lindas', { start: 11, end: 12 }),
+            frameRate: 5,
+            yoyo: true,
+            repeat: 0
+        });
+        this.anims.create({
+            key: 'lindastakeDmgweapon',
+            frames: this.anims.generateFrameNumbers('lindas', { start: 13, end: 14 }),
+            frameRate: 5,
+            yoyo: true,
+            repeat: 0
+        });
+        this.anims.create({
+            key: 'lindasdie',
+            frames: this.anims.generateFrameNumbers('lindas', { start: 8, end: 9 }),
             frameRate: 5,
             yoyo: false,
             repeat: 0
