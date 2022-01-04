@@ -19,11 +19,11 @@ class level2 extends Phaser.Scene {
     updateBackground() {
         if (this.canChangeScene) {
             this.canChangeScene = false;
-            this.numBackground++;
             this.background = this.add.tileSprite(0, 0, 256, 192, 'background2.' + this.numBackground).setOrigin(0);
+            this.numBackground--;
 
-            if (this.numBackground >= 3) {
-                this.numBackground = 0;
+            if (this.numBackground <= 0) {
+                this.numBackground = 3;
             }
 
             //Timer in ms to call function that triggers swap between backgrounds

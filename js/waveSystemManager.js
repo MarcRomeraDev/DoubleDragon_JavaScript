@@ -26,13 +26,14 @@ class waveSystemManager extends Phaser.GameObjects.Sprite {
             switch (this.counter) {
                 case 0:
                     //Spawn 2 williams at start
+                    
                     this.createEnemy((config.width * 2 / 3) + 20, (config.height * 2 / 3) + 20, 'williams');
                     this.createEnemy(config.width * 8 / 10, (config.height * 2 / 3) - 20, 'williams');
 
                     break;
                 case 1:
                     //Spawn 1 william appears
-                    this.createEnemy(config.width + 50, config.height / 2, 'williams');
+                    this.createEnemy(config.width + 50, config.height / 2, 'lindas');
                     break;
                 case 3:
                     //Move Screen
@@ -40,7 +41,7 @@ class waveSystemManager extends Phaser.GameObjects.Sprite {
                     break;
                 case 4:
                     // Two lindas appear when the character passes the door
-                    this.createEnemy((config.width * 2 / 3)-10, (config.height / 2)+10, 'lindas');
+                    this.createEnemy((config.width * 2 / 3)-10, (config.height / 2)+10, 'lindas', true);
                     this.createEnemy((config.width * 2 / 3)+10, (config.height / 2)+10, 'lindas');
                     break;
                 case 6:
@@ -53,7 +54,7 @@ class waveSystemManager extends Phaser.GameObjects.Sprite {
                 case 9: // advacing to the end of the level
                     this.scene.advanceInScene();
                     this.createEnemy((config.width + 100), (config.height * 5 / 7), 'lindas');
-                    this.createEnemy((config.width + 200), (config.height * 6 / 7), 'lindas');
+                    this.createEnemy((config.width + 200), (config.height * 6 / 7), 'lindas', true);
                     break;
                 case 12: // Once both lindas are dead and the player is in the end
                     this.createEnemy(-20, (config.height * 2 / 3), 'lindas');
@@ -97,7 +98,7 @@ class waveSystemManager extends Phaser.GameObjects.Sprite {
         });
     }
 
-    createEnemy(_posX, _posY, _type) {
+    createEnemy(_posX, _posY, _type,_startWithWeapon = false) {
         var _enemy = this.enemies.getFirst(false);  //Buscamos en el pool de enemigos si hay alguna reutilizable
         if (!_enemy) {//No hay
             console.log('Create Enemy');
@@ -107,7 +108,7 @@ class waveSystemManager extends Phaser.GameObjects.Sprite {
                     _enemy = new enemyWilliams(this.scene, _posX, _posY, _type, this.scene.player, 3, 1);
                     break;
                 case 'lindas':
-                    _enemy = new enemyWilliams(this.scene, _posX, _posY, 'williams', this.scene.player, 3, 1);
+                    _enemy = new enemyLindas(this.scene, _posX, _posY, _type, this.scene.player, 3, 1);
                     break;
                 case 'lopars':
                     _enemy = new enemyWilliams(this.scene, _posX, _posY, 'williams', this.scene.player, 3, 1);
@@ -125,10 +126,10 @@ class waveSystemManager extends Phaser.GameObjects.Sprite {
                 this.enemies.remove(_enemy);
                 switch (_type) {
                     case 'williams':
-                        _enemy = new enemyWilliams(this.scene, _posX, _posY, _type, this.scene.player, 3, 12);
+                        _enemy = new enemyWilliams(this.scene, _posX, _posY, _type, this.scene.player, 3, 1);
                         break;
                     case 'lindas':
-                        _enemy = new enemyWilliams(this.scene, _posX, _posY, 'williams', this.scene.player, 3, 1);
+                        _enemy = new enemyLindas(this.scene, _posX, _posY, _type, this.scene.player, 3, 1);
                         break;
                     case 'lopars':
                         _enemy = new enemyWilliams(this.scene, _posX, _posY, 'williams', this.scene.player, 3, 1);
@@ -140,9 +141,15 @@ class waveSystemManager extends Phaser.GameObjects.Sprite {
                 }
                 this.enemies.add(_enemy);
             }
+          
             _enemy.active = true;
             _enemy.body.reset(_posX, _posY);
             _enemy.resetEnemy();
+        }
+        console.log(_startWithWeapon);
+        if(_startWithWeapon)
+        {
+            _enemy.giveWeapon();
         }
 
     }

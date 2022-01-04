@@ -8,6 +8,7 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
         this.maxHealth = _health;
         this.dmg = _dmg;
         this.direction = 1;
+        this.hasWeapon = false;
         this.init();
         this.enemyHitbox = this.scene.add.rectangle(config.width / 2 + 20, config.height * .68, 15, 10, 0xffffff, 0);
         this.scene.physics.add.existing(this.enemyHitbox);
@@ -15,7 +16,7 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
     }
 
     init() {
-        this.eMoveState = "AWAY"; // States: AWAY, IN_RANGE, KNOCKED_DOWN 
+        this.eMoveState = "AWAY"; // States: AWAY, IN_RANGE, KNOCKED_DOWN
         this.isScenearyMoving = false;
         this.followY = false;
         this.followX = false;
@@ -43,20 +44,32 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
 
         super.preUpdate(time, delta);
     }
-    takeDmg(_enemy, _dmgTaken) {
+    giveWeapon() {
+        this.hasWeapon = true;
+
+    }
+    dropWeapon() {
+        this.hasWeapon = false;
+    }
+    takeDmg(_enemy, _dmgTaken, _forceKnockDown = false) {
         if (this.isVulnerable && Phaser.Math.Distance.Between(0, _enemy.body.y, 0, this.scene.player.body.y - gamePrefs.heightPunchingThreshold) < 1) {
             this.scene.updateExp(20); //-->UPDATE PLAYER EXP
             this.scene.updateScore(); //--> UPDATE PLAYER SCORE AND HIGH SCORE
-
-            _enemy.anims.play(this.eType + 'run', false);
+            if (!this.hasWeapon)
+                _enemy.anims.play(this.eType + 'run', false);
+            else
+                _enemy.anims.play(this.eType + 'runweapon', false);
             this.health -= _dmgTaken;
             this.isVulnerable = false;
             _enemy.body.velocity.y = 0;
             _enemy.body.velocity.x = 0;
             if (this.health > 0) {
                 this.knockDownCounter--;
-                if (this.knockDownCounter >= 0) {
-                    _enemy.anims.play(this.eType + 'takeDmg', true);
+                if (this.knockDownCounter > 0 && !_forceKnockDown) {
+                    if (!this.hasWeapon)
+                        _enemy.anims.play(this.eType + 'takeDmg', true);
+                    else
+                        _enemy.anims.play(this.eType + 'takeDmgweapon', true);
                     if (!this.imFighting) {
                         this.imFighting = true;
                     }
@@ -64,6 +77,9 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
                 }
                 else {
                     this.attackingTimer = this.scene.time.delayedCall(gamePrefs.knockDownTimer, this.setVulnerable, [true], this);
+                    if (this.hasWeapon) {
+                        _enemy.dropWeapon();
+                    }
                     _enemy.anims.play(this.eType + 'die', true);
                     this.startAFight(false);
                     this.eMoveState = "KNOCKED_DOWN";
@@ -72,15 +88,18 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
             }
             else {
                 this.startAFight(false);
-                _enemy.anims.play(this.eType + 'die', true);
                 this.eMoveState = "DEAD";
+                if (this.hasWeapon) {
+                    _enemy.dropWeapon();
+                }
+                _enemy.anims.play(this.eType + 'die', true);
                 this.attackingTimer = this.scene.time.delayedCall(gamePrefs.knockDownTimer, this.scene.waveSystem.enemyDied, [this], this.scene.waveSystem);
 
             }
         }
     }
     setVulnerable(_bool) {
-        if (this.eMoveState == "KNOCKED_DOWN") {
+        if (this.eMoveState == "KNOCKED_DOWN" && _bool) {
             this.eMoveState = "AWAY";
             this.isEnemyDown = false;
         }
@@ -94,23 +113,36 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
     }
     attack(_enemy) {
         if (!this.isAttacking && this.eMoveState == "IN_RANGE" && this.isVulnerable) {
-            _enemy.anims.play(this.eType + 'run', false);
-            this.scene.ePunchSound.play();
-            this.flipFlop = !this.flipFlop;
-            if (this.flipFlop) { //right punch
-                _enemy.setFrame(4);
-            }
-            else { //left punch
-                _enemy.setFrame(3);
-            }
             this.isAttacking = true;
-            this.enemyPunchTimer = this.scene.time.delayedCall(gamePrefs.punchDuration, this.resetEnemyFrameToIddle, [_enemy], this);
-            this.attackingTimer = this.scene.time.delayedCall(gamePrefs.attackRate, this.setIsAttacking, [false], this);
+            if (!this.hasWeapon) {
+                _enemy.anims.play(this.eType + 'run', false);
+                this.scene.ePunchSound.play();
+                this.flipFlop = !this.flipFlop;
+                if (this.flipFlop) { //right punch
+                    _enemy.setFrame(4);
+                }
+                else { //left punch
+                    _enemy.setFrame(3);
+                }
+
+                this.enemyPunchTimer = this.scene.time.delayedCall(gamePrefs.punchDuration, this.resetEnemyFrameToIddle, [_enemy], this);
+                this.attackingTimer = this.scene.time.delayedCall(gamePrefs.attackRate, this.setIsAttacking, [false], this);
+            }
+            else {
+                _enemy.anims.play(this.eType + 'runweapon', false);
+                _enemy.attackWithWeapon();
+            }
+
+
         }
     }
     resetEnemyFrameToIddle(_enemy) {
-        if (this.eMoveState != "KNOCKED_DOWN")
-            _enemy.setFrame(0);
+        if (this.eMoveState != "KNOCKED_DOWN" && this.eMoveState != "DEAD") {
+            if (!this.hasWeapon)
+                _enemy.setFrame(0);
+            else
+                _enemy.setFrame(17);
+        }
     }
     resetEnemyFrameToGetUp(_enemy) {
         _enemy.setFrame(10);
@@ -120,7 +152,7 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
         this.eMoveState = _newState;
     }
     move(_enemy, _hero) {
-        if (this.eMoveState != "KNOCKED_DOWN" && this.isVulnerable && !this.isAttacking) {
+        if (this.eMoveState != "KNOCKED_DOWN" && this.eMoveState != "DEAD" && this.isVulnerable && !this.isAttacking) {
 
             var distanceX = Phaser.Math.Distance.Between(_enemy.body.x, 0, _hero.body.x, 0);
             var distanceY = Phaser.Math.Distance.Between(0, _enemy.body.y, 0, _hero.body.y - gamePrefs.heightPunchingThreshold);
@@ -166,7 +198,7 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
                                 this.switchLanesTimer = this.scene.time.delayedCall(200, this.resetSwitchLanes, [], this);
                             }
                             else
-                                _enemy.body.velocity.x = gamePrefs.enemySpeed;
+                                _enemy.body.velocity.x = gamePrefs.enemySpeed* 2.5;
                         }
                         else {
                             if (distanceX < gamePrefs.attackRange * 0.5 && _enemy.flipX != _hero.flipX) {
@@ -175,7 +207,7 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
                                 this.switchLanesTimer = this.scene.time.delayedCall(200, this.resetSwitchLanes, [], this);
                             }
                             else
-                                _enemy.body.velocity.x = -gamePrefs.enemySpeed;
+                                _enemy.body.velocity.x = -gamePrefs.enemySpeed* 2.5;
                         }
                     }
                     else {
@@ -186,6 +218,8 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
                 }
             }
             else { // Player is fighting someone else, I must wait
+
+
                 if (distanceY < gamePrefs.heightThreshold) { // Get in distance to get in when the chance is given
                     if (_enemy.body.y > _hero.body.y) {
                         _enemy.body.velocity.y = gamePrefs.enemySpeed;
@@ -225,7 +259,10 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
                         else {
                             _enemy.body.velocity.x = 0; // here I wait for my chance
                             this.changeMoveState("WAITING");
-                            _enemy.anims.play(this.eType + 'run', false);
+                            if (!this.hasWeapon)
+                                _enemy.anims.play(this.eType + 'run', false);
+                            else
+                                _enemy.anims.play(this.eType + 'runweapon', false);
 
                             //this.resetEnemyFrameToIddle(_enemy);
                         }
@@ -235,7 +272,10 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
             }
             if (this.eMoveState == "AWAY") {
                 // _enemy.anims.play(this.eType + 'takeDmg', false);
-                _enemy.anims.play(this.eType + 'run', true);
+                if (!this.hasWeapon)
+                    _enemy.anims.play(this.eType + 'run', true);
+                else
+                    _enemy.anims.play(this.eType + 'runweapon', true);
             }
         }
         else if ((this.eMoveState == "KNOCKED_DOWN" || this.eMoveState == "DEAD") && !this.isVulnerable && !this.isEnemyDown) {
@@ -247,7 +287,7 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
             else {
                 _enemy.body.velocity.x = -gamePrefs.enemySpeed;
             }
-
+            if(this.eMoveState != "DEAD")
             this.getUpTimer = this.scene.time.delayedCall(500, this.getUp, [_enemy], this);
         }
         else { _enemy.body.velocity.x = 0; }
@@ -265,12 +305,20 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
     resetSwitchLanes() {
         this.switchLanes = false;
     }
+    
     getUp(_enemy) {
         this.body.velocity.x = 0;
         //_enemy.anims.play(this.eType + 'die', false);
         if (this.eMoveState == "KNOCKED_DOWN")
             this.getUpTimer = this.scene.time.delayedCall(500, this.resetEnemyFrameToGetUp, [_enemy], this);
         //_enemy.setFrame(10);
+    }
+    pickUpWeapon(_enemy)
+    {
+        this.eMoveState = "KNOCKED_DOWN";
+        this.body.velocity.x = 0;
+        //_enemy.anims.play(this.eType + 'die', false);
+        //this.getUpTimer = this.scene.time.delayedCall(500, this.resetEnemyFrameToIddle, [_enemy], this);
     }
 
     startAFight(_boolean) // Start a fight makes this enemy the only one that can go hit the player like in the original DD

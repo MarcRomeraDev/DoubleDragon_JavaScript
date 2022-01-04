@@ -12,7 +12,9 @@ var gamePrefs =
     vulnerableTimer: 300,
     knockDownTimer: 2000,
     backgroundSpeed: 1,
-    heightPunchingThreshold: 4
+    heightPunchingThreshold: 4,
+    whipDuration: 300,
+    lindaWeaponAttackRate: 450
 }
 var sceneVars =
 {
