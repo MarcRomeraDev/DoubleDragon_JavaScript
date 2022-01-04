@@ -22,6 +22,7 @@ class character extends Phaser.GameObjects.Sprite {
     this.scene.physics.add.existing(this.attackHitbox);
     this.attackHitbox.body.enable = false;
 
+    //#region PLAYER DATA
     this.isDead = false;
     this.level = 1;
     this.lifes = 2;
@@ -34,8 +35,13 @@ class character extends Phaser.GameObjects.Sprite {
     this.attackFlipFlop = false;
     this.canAttack = true;
     this.DoOnePunch = true;
+    //#endregion
 
     this.setFrame(1);
+  }
+
+  preUpdate(time, delta) {
+    super.preUpdate(time, delta)
   }
 
   updatePlayer() {
@@ -45,17 +51,13 @@ class character extends Phaser.GameObjects.Sprite {
     this.attackPlayerManager();
   }
 
-  preUpdate(time, delta) {
-    super.preUpdate(time, delta)
-  }
-
   updatePlayerHitbox() {
     if (this.anims.currentFrame != null) {
       this.body.setSize(16, 37, true).setOffset(30, 10);
     }
   }
 
-  //KILLS PLAYER, RESETS HIM ON SCENE AND UPDATES PROPERTIES
+  //KILLS PLAYER --> RESETS HIM ON SCENE AND UPDATES PROPERTIES
   kill() {
     this.lifes--;
     this.health = 14;
@@ -63,7 +65,7 @@ class character extends Phaser.GameObjects.Sprite {
     this.collideWorldBounds = true;
     this.body.gravity.y = 0;
     this.isDead = false;
-    this.body.reset(config.width / 10, config.height / 2 + 20);
+    this.body.reset(config.width / 10, config.height / 2 + 22);
     if (this.lifes < 0) {
       this.visible = false;
     }
@@ -88,7 +90,7 @@ class character extends Phaser.GameObjects.Sprite {
         this.setFrame(5);
 
       this.attackFlipFlop = !this.attackFlipFlop;
-      this.punchTimer = this.scene.time.delayedCall(gamePrefs.punchDuration, this.iddlePlayer, [], this);
+      this.punchTimer = this.scene.time.delayedCall(gamePrefs.punchDuration, function () { this.setFrame(1); }, [], this);
       this.stop();
       this.scene.punchSound.play();
       this.isAttacking = true;
@@ -99,8 +101,10 @@ class character extends Phaser.GameObjects.Sprite {
 
       this.scene.physics.world.add(this.attackHitbox.body); //--> Adds hitbox to the attack when pressing input
 
-      this.AttackingTimer = this.scene.time.delayedCall(gamePrefs.attackRate, this.resetAttackTimer, [], this);
-      this.HitBoxTimer = this.scene.time.delayedCall(gamePrefs.punchCollisionDuration, this.resetHitbox, [], this);
+      this.AttackingTimer = this.scene.time.delayedCall(gamePrefs.attackRate, function () { this.isAttacking = false; }, [], this);
+
+      // Removes hitbox of attack when attack ends
+      this.HitBoxTimer = this.scene.time.delayedCall(gamePrefs.punchCollisionDuration, function () { this.attackHitbox.body.enable = false; }, [], this);
     }
   }
   //#endregion
@@ -157,16 +161,4 @@ class character extends Phaser.GameObjects.Sprite {
     }
   }
   //#endregion
-
-  iddlePlayer() {
-    this.setFrame(1);
-  }
-
-  resetAttackTimer() {
-    this.isAttacking = false;
-  }
-
-  resetHitbox() {
-    this.attackHitbox.body.enable = false; //--> Removes hitbox of attack when attack ends
-  }
 }

@@ -98,13 +98,30 @@ class gameState extends Phaser.Scene {
         this.physics.add.overlap(this.player, this.doorTrigger, this.changeScene, null, this);
     }
 
-    changeScene() {
-        this.music.stop();
-        this.scene.start('level2', {
-            player: this.player //--> Pass player data to save it across scene change
-        });
+    update() {
+        this.updateLevel();
+        this.updateGameTimer();
+        this.updateThumbsUp();
+        this.player.updatePlayer();
+
+        //INPUT TO TEST RECIEVE DAMAGE
+        if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.h)) {
+            this.health[this.player.health - 1].visible = false;
+            this.player.health--;
+            this.checkPlayerHealth();
+            this.changeScene();
+        }
+
+        //INPUT TO TEST HEALING
+        if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.q)) {
+            if (this.player.health < 14) {
+                this.player.health++;
+                this.health[this.player.health - 1].visible = true;
+            }
+        }
     }
 
+    //#region  UPDATES
     updateGameTimer() {
         this.timeText.setText('TIME ' + this.gameTime);
     }
@@ -129,6 +146,19 @@ class gameState extends Phaser.Scene {
         }
     }
 
+    updateThumbsUp() {
+        if (this.changeThumbsUp) {
+            !this.thumbsUpFlipFlop ? this.thumbsUpImage.visible = true : this.thumbsUpImage.visible = false;
+            this.thumbsUpFlipFlop = !this.thumbsUpFlipFlop;
+            this.changeThumbsUp = false;
+
+            //Timer in ms to call function that triggers swap between backgrounds
+            this.thumbsUpTimer = this.time.delayedCall(450, function () { this.changeThumbsUp = true }, [], this);
+        }
+    }
+    //#endregion
+
+    //#region CREATE ANIMATIONS
     createPlayerAnims() {
         this.anims.create({
             key: 'run',
@@ -161,38 +191,13 @@ class gameState extends Phaser.Scene {
             repeat: 0
         });
     }
+    //#endregion
 
-    updateThumbsUp() {
-        if (this.changeThumbsUp) {
-            !this.thumbsUpFlipFlop ? this.thumbsUpImage.visible = true : this.thumbsUpImage.visible = false;
-            this.thumbsUpFlipFlop = !this.thumbsUpFlipFlop;
-            this.changeThumbsUp = false;
-
-            //Timer in ms to call function that triggers swap between backgrounds
-            this.thumbsUpTimer = this.time.delayedCall(450, function changeThumbsUpVisibility() { this.changeThumbsUp = true }, [], this);
-        }
-    }
-
-    update() {
-        this.updateLevel();
-        this.updateGameTimer();
-        this.updateThumbsUp();
-        this.player.updatePlayer();
-
-        //INPUT TO TEST RECIEVE DAMAGE
-        if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.h)) {
-            this.health[this.player.health - 1].visible = false;
-            this.player.health--;
-            this.checkPlayerHealth();
-        }
-
-        //INPUT TO TEST HEALING
-        if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.q)) {
-            if (this.player.health < 14) {
-                this.player.health++;
-                this.health[this.player.health - 1].visible = true;
-            }
-        }
+    changeScene() {
+        this.music.stop();
+        this.scene.start('level2', {
+            player: this.player //--> Pass player data to save it across scene change
+        });
     }
 
     advanceInScene() {
