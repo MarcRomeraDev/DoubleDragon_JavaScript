@@ -8,14 +8,6 @@ class level2 extends Phaser.Scene {
         this.playerData = data.player;
     }
 
-    preload() { //carga los assets en memoria
-        //SPRITES
-        this.load.setPath("assets/sprites/");
-        this.load.image('background2.1', 'Mission1BackgroundSprites/2.png');
-        this.load.image('background2.2', 'Mission1BackgroundSprites/3.png');
-        this.load.image('background2.3', 'Mission1BackgroundSprites/4.png');
-    }
-
     create() { //carga los assets en pantalla desde memoria
         this.punchSound = this.sound.add('punch');
         this.ePunchSound = this.sound.add('punch');
@@ -26,12 +18,9 @@ class level2 extends Phaser.Scene {
         this.player = new character(this, config.width / 2, config.height * .7, 'player');
         this.initPlayerData();
 
-        this.canChangeScene = true;
         this.gameTime = 200;
         this.maxY = config.height / 3 + 5;
         this.minY = config.height / 2 + 15;
-
-        this.numBackground = 1;
 
         this.gameTimer = this.time.addEvent({ delay: 1000, callback: function () { this.gameTime--; }, callbackScope: this, loop: true });
 
@@ -69,9 +58,9 @@ class level2 extends Phaser.Scene {
         this.expText = this.add.text(20, config.height - 12, this.player.exp, { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //exp
         this.timeText = this.add.text(config.width / 2 + 10, config.height - 12, 'TIME ', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //game time
         this.scoreText = this.add.text(config.width - 60, config.height - 12, '1P ', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //score text
-        this.scoreNumbersText = this.add.text(config.width - 25, config.height - 12, this.player.score, { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //score num
+        this.scoreNumbersText = this.add.text(config.width - 25, config.height - 12, '00', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //score num
         this.highScoreText = this.add.text(config.width - 60, config.height - 20, 'HI ', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //highscore text
-        this.highScoreNumbersText = this.add.text(config.width - 25, config.height - 20, this.player.score, { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //highscore num
+        this.highScoreNumbersText = this.add.text(config.width - 25, config.height - 20, '00', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //highscore num
         this.lifesText = this.add.text(config.width / 2 + 14, config.height - 20, 'P-2', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //game time
     }
 
