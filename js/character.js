@@ -22,10 +22,13 @@ class character extends Phaser.GameObjects.Sprite {
     this.scene.physics.add.existing(this.attackHitbox);
     this.attackHitbox.body.enable = false;
 
+    this.isDead = false;
     this.level = 1;
+    this.lifes = 2;
     this.health = 14;
     this.exp = 0;
     this.score = 0;
+    this.canMove = true;
     this.isAttacking = false;
     this.wantsToAttack = false;
     this.attackFlipFlop = false;
@@ -49,6 +52,20 @@ class character extends Phaser.GameObjects.Sprite {
   updatePlayerHitbox() {
     if (this.anims.currentFrame != null) {
       this.body.setSize(16, 37, true).setOffset(30, 10);
+    }
+  }
+
+  //KILLS PLAYER, RESETS HIM ON SCENE AND UPDATES PROPERTIES
+  kill() {
+    this.lifes--;
+    this.health = 14;
+    this.canMove = true;
+    this.collideWorldBounds = true;
+    this.body.gravity.y = 0;
+    this.isDead = false;
+    this.body.reset(config.width / 10, config.height / 2 + 20);
+    if (this.lifes < 0) {
+      this.visible = false;
     }
   }
 
@@ -91,15 +108,15 @@ class character extends Phaser.GameObjects.Sprite {
   //#region  MOVE
   movePlayerManager() {
     this.body.setVelocity(0, 0);
-    if (!this.isAttacking) {
+    if (!this.isAttacking && this.canMove) {
       if (this.cursorKeys.down.isDown) { // down
-        if (this.body.y < 2 / 3 * config.height + 5) {
+        if (this.body.y < this.scene.minY) {
           this.body.setVelocityY(gamePrefs.playerSpeed);
           this.play('run', true);
         }
       }
       else if (this.cursorKeys.up.isDown) { // up
-        if (this.body.y > config.height / 2) {
+        if (this.body.y > this.scene.maxY) {
           this.body.setVelocityY(-gamePrefs.playerSpeed);
           this.play('run', true);
         }
