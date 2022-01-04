@@ -29,6 +29,7 @@ class character extends Phaser.GameObjects.Sprite {
     this.health = 14;
     this.exp = 0;
     this.score = 0;
+    this.highScore = 0;
     this.canMove = true;
     this.isAttacking = false;
     this.wantsToAttack = false;

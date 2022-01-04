@@ -58,9 +58,9 @@ class level2 extends Phaser.Scene {
         this.expText = this.add.text(20, config.height - 12, this.player.exp, { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //exp
         this.timeText = this.add.text(config.width / 2 + 10, config.height - 12, 'TIME ', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //game time
         this.scoreText = this.add.text(config.width - 60, config.height - 12, '1P ', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //score text
-        this.scoreNumbersText = this.add.text(config.width - 25, config.height - 12, '00', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //score num
+        this.scoreNumbersText = this.add.text(config.width - 25, config.height - 12, this.player.score, { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //score num
         this.highScoreText = this.add.text(config.width - 60, config.height - 20, 'HI ', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //highscore text
-        this.highScoreNumbersText = this.add.text(config.width - 25, config.height - 20, '00', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //highscore num
+        this.highScoreNumbersText = this.add.text(config.width - 25, config.height - 20, this.player.highScore, { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //highscore num
         this.lifesText = this.add.text(config.width / 2 + 14, config.height - 20, 'P-2', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //game time
     }
 
@@ -100,9 +100,14 @@ class level2 extends Phaser.Scene {
     }
 
     updateScore() {
-        this.score += 50; //SCORE EARNED DEPENDS ON ATTACK USED
-        this.scoreNumbersText.setText(this.score.toString());
-        this.highScoreNumbersText.setText(this.score.toString());
+        this.player.score += 50; //SCORE EARNED DEPENDS ON ATTACK USED
+        this.scoreNumbersText.setText(this.player.score);
+
+        if (this.player.score >= this.player.highScore) {
+            this.player.highScore = this.player.score;
+            this.highScoreNumbersText.setText(this.player.highScore);
+            localStorage.setItem('score', this.player.highScore);
+        }
     }
 
     updateLevel() {
@@ -179,6 +184,7 @@ class level2 extends Phaser.Scene {
     initPlayerData() {
         this.player.exp = this.playerData.exp;
         this.player.score = this.playerData.score;
+        this.player.highScore = this.playerData.highScore;
         this.player.level = this.playerData.level;
         this.player.health = this.playerData.health;
         this.player.body.reset(config.width / 10, config.height / 2);
