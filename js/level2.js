@@ -16,32 +16,7 @@ class level2 extends Phaser.Scene {
         this.load.image('background2.3', 'Mission1BackgroundSprites/4.png');
     }
 
-    updateBackground() {
-        if (this.canChangeScene) {
-            this.canChangeScene = false;
-            this.numBackground++;
-            this.background = this.add.tileSprite(0, 0, 256, 192, 'background2.' + this.numBackground).setOrigin(0);
-
-            if (this.numBackground >= 3) {
-                this.numBackground = 0;
-            }
-
-            //Timer in ms to call function that triggers swap between backgrounds
-            this.changeBgTimer = this.time.delayedCall(450, function changeBackground() { this.canChangeScene = true }, [], this);
-        }
-    }
-
-    //UPDATES PLAYER INFO WITH DATA RECIEVED ON SCENE CREATION
-    updatePlayerData() {
-        this.player.exp = this.playerData.exp;
-        this.player.score = this.playerData.score;
-        this.player.level = this.playerData.level;
-        this.player.health = this.playerData.health;
-        this.player.body.reset(config.width / 10, config.height / 2);
-    }
-
     create() { //carga los assets en pantalla desde memoria
-        this.background = this.add.tileSprite(0, 0, config.width, 192, 'background2.1').setOrigin(0.03, 0);
         this.punchSound = this.sound.add('punch');
         this.ePunchSound = this.sound.add('punch');
         this.music = this.sound.add('bgMusic', { volume: .3, loop: true });
@@ -49,7 +24,7 @@ class level2 extends Phaser.Scene {
         this.music.play();
 
         this.player = new character(this, config.width / 2, config.height * .7, 'player');
-        this.updatePlayerData();
+        this.initPlayerData();
 
         this.canChangeScene = true;
         this.gameTime = 200;
@@ -68,14 +43,14 @@ class level2 extends Phaser.Scene {
 
         this.isPlayerInAFight = false;
 
-        //Stores the sprites of the player's health
+        //STORES THE SPRITES OF THE PLAYER'S HEALTH
         this.health = [];
         for (var i = 0; i < 14; i++) {
             this.health[i] = this.add.sprite(40 + 4 * i, config.height - 25, 'health').setOrigin(0).setDisplaySize(3, 7);
         }
         this.player.health = this.health.length;
 
-        //Stores the sprites of the player's hearts (levels)
+        //STORES THE SPRITES OF THE PLAYER'S HEARTS (levels)
         this.hearts = [];
         for (var i = 0; i < 3; i++) {
             this.hearts[i] = this.add.sprite(39 + 12 * i, config.height - 15, 'heart').setOrigin(0).setDisplaySize(12, 9);
@@ -83,7 +58,10 @@ class level2 extends Phaser.Scene {
                 this.hearts[i].visible = false;
             }
         }
+
         this.createPlayerAnims();
+        this.createBackgroundAnim();
+
         //this.createWilliamsAnims();
         //this.physics.add.overlap(this.player.attackHitbox, this.waveSystem.enemies, this.waveSystem.dmgEnemy, null, this.waveSystem);
 
@@ -94,12 +72,33 @@ class level2 extends Phaser.Scene {
         this.scoreNumbersText = this.add.text(config.width - 25, config.height - 12, this.player.score, { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //score num
         this.highScoreText = this.add.text(config.width - 60, config.height - 20, 'HI ', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //highscore text
         this.highScoreNumbersText = this.add.text(config.width - 25, config.height - 20, this.player.score, { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //highscore num
-        this.lifesText = this.add.text(config.width / 2 + 14, config.height - 20, 'P-2', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //game time       
-
-        //this.doorTrigger = this.add.rectangle(config.width / 2 + 40, config.height / 2 - 5, 40, 10, 0xffffff, 0);
-        //this.physics.add.overlap(this.player, this.doorTrigger, this.changeScene, null, this);
+        this.lifesText = this.add.text(config.width / 2 + 14, config.height - 20, 'P-2', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //game time
     }
 
+    update() {
+        this.updateLevel();
+        this.updateGameTimer();
+        this.player.updatePlayer();
+        this.updateConveyorBelt();
+
+        //INPUT TO TEST RECIEVE DAMAGE
+        if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.h)) {
+            this.health[this.player.health - 1].visible = false;
+            this.player.health--;
+            this.checkPlayerHealth();
+        }
+
+        //INPUT TO TEST HEALING
+        if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.q)) {
+            if (this.player.health < 14) {
+                this.player.health++;
+                this.health[this.player.health - 1].visible = true;
+                console.log("Health: ", this.player.health);
+            }
+        }
+    }
+
+    //#region  UPDATES
     updateGameTimer() {
         if (this.player.lifes >= 0) {
             this.timeText.setText('TIME ' + this.gameTime);
@@ -124,6 +123,33 @@ class level2 extends Phaser.Scene {
             this.expText.setText(this.exp.toString());
             this.hearts[this.player.level - 1].visible = true;
         }
+    }
+
+    updateConveyorBelt() {
+        if (this.player.body.y < config.height / 2 + 5 && this.player.body.y > config.height / 2 - 12 && this.player.body.x < config.width - 60) {
+            this.player.body.velocity.x += 30;
+        }
+        if (this.player.body.x > config.width - 60 && this.player.body.y > config.height / 2 - 12 && !this.player.isDead) {
+            this.makePlayerFall();
+            this.player.isDead = true;
+        }
+    }
+    //#endregion
+
+    //#region CREATE ANIMATIONS
+    createBackgroundAnim() {
+        this.anims.create({
+            key: 'level2_background_change',
+            frames: [
+                { key: 'background2.3' },
+                { key: 'background2.2' },
+                { key: 'background2.1' }
+            ],
+            frameRate: 4,
+            repeat: -1
+        });
+
+        this.add.sprite(config.width, 192, 'background2.3').setOrigin(1).play('level2_background_change');
     }
 
     createPlayerAnims() {
@@ -158,6 +184,16 @@ class level2 extends Phaser.Scene {
             repeat: 0
         });
     }
+    //#endregion
+
+    //INITIALIZES PLAYER INFO WITH DATA RECIEVED ON SCENE CREATION
+    initPlayerData() {
+        this.player.exp = this.playerData.exp;
+        this.player.score = this.playerData.score;
+        this.player.level = this.playerData.level;
+        this.player.health = this.playerData.health;
+        this.player.body.reset(config.width / 10, config.height / 2);
+    }
 
     makePlayerFall() {
         this.player.canMove = false;
@@ -168,40 +204,6 @@ class level2 extends Phaser.Scene {
 
     // makeEnemiesFall() {
     // }
-
-    updateConveyorBelt() {
-        if (this.player.body.y < config.height / 2 + 5 && this.player.body.y > config.height / 2 - 12 && this.player.body.x < config.width - 60) {
-            this.player.body.velocity.x += 30;
-        }
-        if (this.player.body.x > config.width - 60 && this.player.body.y > config.height / 2 - 12 && !this.player.isDead) {
-            this.makePlayerFall();
-            this.player.isDead = true;
-        }
-    }
-
-    update() {
-        this.updateBackground();
-        this.updateLevel();
-        this.updateGameTimer();
-        this.player.updatePlayer();
-        this.updateConveyorBelt();
-
-        //INPUT TO TEST RECIEVE DAMAGE
-        if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.h)) {
-            this.health[this.player.health - 1].visible = false;
-            this.player.health--;
-            this.checkPlayerHealth();
-        }
-
-        //INPUT TO TEST HEALING
-        if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.q)) {
-            if (this.player.health < 14) {
-                this.player.health++;
-                this.health[this.player.health - 1].visible = true;
-                console.log("Health: ", this.player.health);
-            }
-        }
-    }
 
     //CHECK IF PLAYER DIES
     checkPlayerHealth() {

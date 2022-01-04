@@ -5,8 +5,6 @@ class menu extends Phaser.Scene {
     }
 
     preload() {
-        this.cameras.main.setBackgroundColor("#000000");
-
         //SPRITES
         this.load.setPath('assets/sprites/TitleScreenSprites');
         this.load.image('titleScreen1', '/2.png');
@@ -27,7 +25,8 @@ class menu extends Phaser.Scene {
 
         this.backgroundFlipFlop = false;
         this.canChangeScene = true;
-        this.titleScreen = this.add.tileSprite(0, 0, 256, config.height, 'titleScreen').setOrigin(0.03, 0);
+
+        this.createBackgroundAnim();
     }
 
     changeScene() {
@@ -35,22 +34,21 @@ class menu extends Phaser.Scene {
         this.scene.start('gameState');
     }
 
-    updateBackground() {
-        if (this.canChangeScene) {
-            !this.backgroundFlipFlop ? this.titleScreen = this.add.tileSprite(0, 0, 256, config.height, 'titleScreen1').setOrigin(0.03, 0) :
-                this.titleScreen = this.add.tileSprite(0, 0, 256, config.height, 'titleScreen2').setOrigin(0.03, 0);
+    createBackgroundAnim() {
+        this.anims.create({
+            key: 'menu_background_change',
+            frames: [
+                { key: 'titleScreen1' },
+                { key: 'titleScreen2' }
+            ],
+            frameRate: 2,
+            repeat: -1
+        });
 
-            this.backgroundFlipFlop = !this.backgroundFlipFlop;
-            this.canChangeScene = false;
-
-            //Timer in ms to call function that triggers swap between backgrounds
-            this.changeBgTimer = this.time.delayedCall(450, function changeBackground() { this.canChangeScene = true }, [], this);
-        }
+        this.add.sprite(256, config.height, 'titleScreen1').setOrigin(1.03, 1).play('menu_background_change');
     }
 
     update() {
-        this.updateBackground();
-
         //INPUT TO CHANGE SCENE--> A
         if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.a)) {
             this.changeScene();
