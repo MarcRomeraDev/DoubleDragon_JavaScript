@@ -6,7 +6,7 @@ class gameState extends Phaser.Scene {
             });
     }
 
-        this.load.spritesheet('lindas', 'LindaSprites/lindaSpriteSheet.png', { frameWidth: 76, frameHeight: 40 });
+     
     create() { //carga los assets en pantalla desde memoria
         this.gameTime = 200;
         this.thumbsUpTimer;
