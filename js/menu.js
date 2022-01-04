@@ -57,7 +57,6 @@ class menu extends Phaser.Scene {
     }
 
     changeScene() {
-        this.menuMusic.stop();
         this.scene.start('gameState');
     }
 

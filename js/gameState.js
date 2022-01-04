@@ -88,7 +88,6 @@ class gameState extends Phaser.Scene {
             this.health[this.player.health - 1].visible = false;
             this.player.health--;
             this.checkPlayerHealth();
-            this.changeScene();
         }
 
         //INPUT TO TEST HEALING
