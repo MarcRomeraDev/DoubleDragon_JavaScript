@@ -62,7 +62,7 @@ class character extends Phaser.GameObjects.Sprite {
     this.lifes--;
     this.health = 14;
     this.canMove = true;
-    this.collideWorldBounds = true;
+    this.body.collideWorldBounds = true;
     this.body.gravity.y = 0;
     this.isDead = false;
     this.body.reset(config.width / 10, config.height / 2 + 22);

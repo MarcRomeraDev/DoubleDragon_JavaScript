@@ -172,7 +172,9 @@ class gameState extends Phaser.Scene {
     //#endregion
 
     changeScene() {
+        
         this.music.stop();
+
         this.scene.start('level2', {
             player: this.player //--> Pass player data to save it across scene change
         });
