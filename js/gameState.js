@@ -6,7 +6,7 @@ class gameState extends Phaser.Scene {
             });
     }
 
-     
+
     create() { //carga los assets en pantalla desde memoria
         this.gameTime = 200;
         this.thumbsUpTimer;
@@ -14,7 +14,17 @@ class gameState extends Phaser.Scene {
         this.minY = 2 / 3 * config.height + 5;
         this.beltForce = -5;
 
-        this.gameTimer = this.time.addEvent({ delay: 1000, callback: function () { this.gameTime--; }, callbackScope: this, loop: true });
+        this.gameTimer = this.time.addEvent({
+            delay: 1000, callback: function () {
+                this.gameTime--;
+                this.timeText.setText('TIME ' + this.gameTime);
+                if (this.gameTime < 0) {
+                    this.player.health = 0;
+                    this.checkPlayerHealth();
+                }
+            },
+            callbackScope: this, loop: true
+        });
 
         //STORES EVERY INPUT KEY WE NEED
         this.keyboardKeys = this.input.keyboard.addKeys({
@@ -30,6 +40,7 @@ class gameState extends Phaser.Scene {
         this.music.play();
 
         this.player = new character(this, config.width / 2, config.height * .7, 'player');
+        this.loadPlayerData();
 
         this.thumbsUpImage = this.add.sprite(config.width - 40, config.height / 2, 'thumbsUp');
         this.changeThumbsUp = false;
@@ -62,16 +73,16 @@ class gameState extends Phaser.Scene {
         this.createLindasAnims();
 
         this.waveSystem = new waveSystemManager(this);
-        
+
         this.physics.add.overlap(this.player.attackHitbox, this.waveSystem.enemies, this.waveSystem.dmgEnemy, null, this.waveSystem);
 
         this.playerText = this.add.text(20, config.height - 20, '1P', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //player
         this.expText = this.add.text(20, config.height - 12, this.player.exp, { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //exp
-        this.timeText = this.add.text(config.width / 2 + 10, config.height - 12, 'TIME ', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //game time
+        this.timeText = this.add.text(config.width / 2 + 10, config.height - 12, 'TIME ' + this.gameTime, { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //game time
         this.scoreText = this.add.text(config.width - 60, config.height - 12, '1P ', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //score text
         this.scoreNumbersText = this.add.text(config.width - 25, config.height - 12, '00', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //score num
         this.highScoreText = this.add.text(config.width - 60, config.height - 20, 'HI ', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //highscore text
-        this.highScoreNumbersText = this.add.text(config.width - 25, config.height - 20, '00', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //highscore num
+        this.highScoreNumbersText = this.add.text(config.width - 25, config.height - 20, this.player.highScore, { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //highscore num
         this.lifesText = this.add.text(config.width / 2 + 14, config.height - 20, 'P-2', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //game time       
 
         this.doorTrigger = this.add.rectangle(config.width / 2 + 40, config.height / 2 + 2, 40, 10, 0xffffff, 0);
@@ -81,7 +92,6 @@ class gameState extends Phaser.Scene {
 
     update() {
         this.updateLevel();
-        this.updateGameTimer();
         this.updateThumbsUp();
         this.player.updatePlayer();
 
@@ -90,7 +100,7 @@ class gameState extends Phaser.Scene {
             this.health[this.player.health - 1].visible = false;
             this.player.health--;
             this.checkPlayerHealth();
-            this.changeScene();
+            //this.changeScene();
         }
 
         //INPUT TO TEST HEALING
@@ -102,20 +112,25 @@ class gameState extends Phaser.Scene {
         }
     }
 
-    //#region  UPDATES
-    updateGameTimer() {
-        this.timeText.setText('TIME ' + this.gameTime);
+    loadPlayerData() {
+        this.player.highScore = parseInt(localStorage.getItem('score')) || '00';
     }
 
+    //#region  UPDATES
     updateExp(exp) {
         this.player.exp += exp;
-        this.expText.setText(this.player.exp.toString());
+        this.expText.setText(this.player.exp);
     }
 
     updateScore() {
         this.player.score += 50; //SCORE EARNED DEPENDS ON ATTACK USED
-        this.scoreNumbersText.setText(this.player.score.toString());
-        this.highScoreNumbersText.setText(this.player.score.toString());
+        this.scoreNumbersText.setText(this.player.score);
+
+        if (this.player.score >= this.player.highScore) {
+            this.player.highScore = this.player.score;
+            this.highScoreNumbersText.setText(this.player.highScore);
+            localStorage.setItem('score', this.player.highScore);
+        }
     }
 
     updateLevel() {
@@ -218,7 +233,7 @@ class gameState extends Phaser.Scene {
     //#endregion
 
     changeScene() {
-        
+
         this.music.stop();
 
         this.scene.start('level2', {
@@ -240,7 +255,9 @@ class gameState extends Phaser.Scene {
             this.player.kill();
             this.music.play();
             if (this.player.lifes >= 0) {
+                this.gameTime = 200;
                 this.lifesText.setText("P-" + this.player.lifes);
+                this.timeText.setText('TIME ' + this.gameTime);
                 for (var i = 0; i < this.player.health; i++) {
                     this.health[i].visible = true;
                 }
@@ -248,8 +265,8 @@ class gameState extends Phaser.Scene {
             else {
                 this.scene.pause();
                 this.music.stop();
-                this.timeText.setText("GAME OVER");
                 this.gameTimer.remove();
+                this.timeText.setText("GAME OVER");
                 this.gameOverMusic.on('complete', function () { this.scene.start('menu'); }, this);
                 this.gameOverMusic.play();
             }

@@ -78,11 +78,12 @@ class menu extends Phaser.Scene {
     update() {
         //INPUT TO CHANGE SCENE--> A
         if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.a)) {
-            this.backgroundAnim.stop();
-            this.backgroundAnim.setTexture('mission1bg');
+            //this.backgroundAnim.stop();
+            //this.backgroundAnim.setTexture('mission1bg');
             this.menuMusic.stop();
-            this.mission1TitleScreenMusic.on('complete', this.changeScene, this);
-            this.mission1TitleScreenMusic.play();
+            this.changeScene();
+            //this.mission1TitleScreenMusic.on('complete', this.changeScene, this);
+            //this.mission1TitleScreenMusic.play();
         }
     }
 }
