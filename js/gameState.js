@@ -6,27 +6,6 @@ class gameState extends Phaser.Scene {
             });
     }
 
-    preload() { //carga los assets en memoria
-
-        //FONTS
-        this.load.css('fonts', 'css/font.css');
-
-        //SPRITES
-        this.load.setPath("assets/sprites/");
-        this.load.image('background1', 'Mission1BackgroundSprites/1.png');
-        this.load.spritesheet('player', 'BillySprites/CharacterSpritesheet.png', { frameWidth: 72, frameHeight: 46 });
-        this.load.spritesheet('williams', 'WilliamSprites/williams.png', { frameWidth: 66, frameHeight: 39 });
-        this.load.image('thumbsUp', 'Props/thumbsUp.png');
-        this.load.image('health', 'HUD/health_bar.png');
-        this.load.image('heart', 'HUD/heart.png');
-
-        //AUDIO
-        this.load.setPath("assets/sounds/");
-        this.load.audio('bgMusic', 'music/mission1.mp3');
-        this.load.audio('punch', 'effects/punch.ogg');
-        this.load.audio('gameOver', 'music/game_over.mp3');
-    }
-
     create() { //carga los assets en pantalla desde memoria
         this.gameTime = 200;
         this.thumbsUpTimer;
@@ -88,9 +67,9 @@ class gameState extends Phaser.Scene {
         this.expText = this.add.text(20, config.height - 12, this.player.exp, { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //exp
         this.timeText = this.add.text(config.width / 2 + 10, config.height - 12, 'TIME ', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //game time
         this.scoreText = this.add.text(config.width - 60, config.height - 12, '1P ', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //score text
-        this.scoreNumbersText = this.add.text(config.width - 25, config.height - 12, this.player.score, { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //score num
+        this.scoreNumbersText = this.add.text(config.width - 25, config.height - 12, '00', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //score num
         this.highScoreText = this.add.text(config.width - 60, config.height - 20, 'HI ', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //highscore text
-        this.highScoreNumbersText = this.add.text(config.width - 25, config.height - 20, this.player.score, { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //highscore num
+        this.highScoreNumbersText = this.add.text(config.width - 25, config.height - 20, '00', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //highscore num
         this.lifesText = this.add.text(config.width / 2 + 14, config.height - 20, 'P-2', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //game time       
 
         this.doorTrigger = this.add.rectangle(config.width / 2 + 40, config.height / 2 + 2, 40, 10, 0xffffff, 0);
