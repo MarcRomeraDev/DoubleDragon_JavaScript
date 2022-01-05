@@ -158,8 +158,9 @@ class gameState extends Phaser.Scene {
     createPlayerAnims() {
         this.anims.create({
             key: 'run',
-            frames: this.anims.generateFrameNumbers('player', { start: 2, end: 3 }),
+            frames: this.anims.generateFrameNumbers('player', { start: 1, end: 3 }),
             frameRate: 5,
+            yoyo: true,
             repeat: -1
         });
     }
