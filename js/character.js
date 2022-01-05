@@ -33,10 +33,7 @@ class character extends Phaser.GameObjects.Sprite {
     this.highScore = 0;
     this.canMove = true;
     this.isAttacking = false;
-    this.wantsToAttack = false;
     this.attackFlipFlop = false;
-    this.canAttack = true;
-    this.DoOnePunch = true;
     //#endregion
 
     this.setFrame(1);
@@ -48,8 +45,7 @@ class character extends Phaser.GameObjects.Sprite {
 
   updatePlayer() {
     this.movementManager();
-    this.punchAttack();
-    this.kickAttack();
+    this.attackManager();
     this.updateHitbox();
     this.depth = this.y;
   }
@@ -75,30 +71,44 @@ class character extends Phaser.GameObjects.Sprite {
   }
 
   //#region ATTACK
+  attackManager() {
+    if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.s)) {
+      this.kickAttack();
+    }
+
+    if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.a)) {
+      this.punchAttack();
+    }
+  }
 
   kickAttack() {
-    if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.s)) {
-      this.play('kick', true);
+    if (!this.isAttacking) {
       this.isAttacking = true;
+      this.kickAnimation = this.play('kick', true);
+
+      this.attackHitbox.x = this.flipX ? this.x - this.width * 0.2 : this.x + this.width * 0.2;
+      this.attackHitbox.y = this.y + this.height * 0.1;
+
+      this.kickAnimation.on('animationupdate', function () {
+        if (this.kickAnimation.anims.currentFrame.index < 3) {
+          return;
+        }
+        this.kickAnimation.off('animationupdate'); //STOPS LISTENER IF ANIMATION IS IN FRAME 3
+        this.scene.physics.world.add(this.attackHitbox.body); //--> ADDS HITBOX WHEN THE ANIMATIONS IS IN ITS THIRD FRAME
+      });
+
+      this.kickAnimation.on('animationcomplete', function () { this.isAttacking = false; this.attackHitbox.body.enable = false; }, false);
     }
   }
 
   punchAttack() {
-
-    if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.a)) {
-      this.wantsToAttack = true;
-    }
-
-    if (Phaser.Input.Keyboard.JustUp(this.keyboardKeys.a)) {
-      this.wantsToAttack = false;
-    }
-
-    if (!this.isAttacking && this.wantsToAttack) //65 == a
-    {
-      if (this.attackFlipFlop)
+    if (!this.isAttacking) {
+      if (this.attackFlipFlop) {
         this.setFrame(4)
-      else
+      }
+      else {
         this.setFrame(5);
+      }
 
       this.attackFlipFlop = !this.attackFlipFlop;
       this.punchTimer = this.scene.time.delayedCall(gamePrefs.punchDuration, function () { this.setFrame(1); }, [], this);

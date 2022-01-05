@@ -91,9 +91,9 @@ class gameState extends Phaser.Scene {
     }
 
     update() {
+        this.updateThumbsUp();
         this.player.updatePlayer();
         this.updateLevel();
-        this.updateThumbsUp();
 
         //INPUT TO TEST RECIEVE DAMAGE
         if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.h)) {
@@ -166,8 +166,8 @@ class gameState extends Phaser.Scene {
 
         this.anims.create({
             key: 'kick',
-            frames: this.anims.generateFrameNumbers('player', { start: 6, end: 7 }),
-            frameRate: 5
+            frames: this.anims.generateFrameNumbers('player', { frames: [6, 7, 7] }),
+            frameRate: 10
         });
     }
 
@@ -252,7 +252,7 @@ class gameState extends Phaser.Scene {
         this.canAdvance = true;
         this.changeThumbsUp = true;
         this.thumbsUpFlipFlop = false;
-    }    
+    }
 
     //CHECK IF PLAYER DIES
     checkPlayerHealth() {
