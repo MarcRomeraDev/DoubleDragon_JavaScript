@@ -38,6 +38,7 @@ class menu extends Phaser.Scene {
         this.load.audio('bgMusic', 'music/mission1.mp3');
         this.load.audio('punch', 'effects/punch.ogg');
         this.load.audio('gameOver', 'music/game_over.mp3');
+        this.load.audio('victoryMusic', 'music/mission_clear.mp3');
 
         //AUDIO
         this.load.setPath("assets/sounds/");
@@ -46,8 +47,8 @@ class menu extends Phaser.Scene {
     }
 
     create() {
-        this.menuMusic = this.sound.add('menuMusic', { volume: .3, loop: true });
-        this.mission1TitleScreenMusic = this.sound.add('mission1TitleScreen', { volume: .3 });
+        this.menuMusic = this.sound.add('menuMusic', { volume: .1, loop: true });
+        this.mission1TitleScreenMusic = this.sound.add('mission1TitleScreen', { volume: .1 });
         this.menuMusic.play();
 
         this.keyboardKeys = this.input.keyboard.addKeys({

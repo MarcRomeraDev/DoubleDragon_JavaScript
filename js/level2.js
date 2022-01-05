@@ -11,8 +11,9 @@ class level2 extends Phaser.Scene {
     create() { //carga los assets en pantalla desde memoria
         this.punchSound = this.sound.add('punch');
         this.ePunchSound = this.sound.add('punch');
-        this.music = this.sound.add('bgMusic', { volume: .3, loop: true });
-        this.gameOverMusic = this.sound.add('gameOver', { volume: .3, loop: false });
+        this.music = this.sound.add('bgMusic', { volume: .1, loop: true });
+        this.gameOverMusic = this.sound.add('gameOver', { volume: .1, loop: false });
+        this.victoryMusic = this.sound.add('victoryMusic', { volume: .1, loop: false });
         this.music.play();
 
         this.player = new character(this, config.width / 2, config.height * .7, 'player');
@@ -75,6 +76,7 @@ class level2 extends Phaser.Scene {
             this.health[this.player.health - 1].visible = false;
             this.player.health--;
             this.checkPlayerHealth();
+            this.victoryEvent();
         }
 
         //INPUT TO TEST HEALING
@@ -215,10 +217,16 @@ class level2 extends Phaser.Scene {
                 this.scene.pause();
                 this.music.stop();
                 this.timeText.setText("GAME OVER");
-                this.gameTimer.remove();
                 this.gameOverMusic.on('complete', function () { this.scene.start('menu'); }, this);
                 this.gameOverMusic.play();
             }
         }
+    }
+
+    victoryEvent() {
+        this.scene.pause();
+        this.music.stop();
+        this.victoryMusic.on('complete', function () { this.scene.start('menu'); }, this);
+        this.victoryMusic.play();
     }
 }

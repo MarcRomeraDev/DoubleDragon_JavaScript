@@ -33,10 +33,10 @@ class gameState extends Phaser.Scene {
         });
 
         this.bg1 = this.add.tileSprite(0, 0, 1015, 192, 'background1').setOrigin(0);
-        this.music = this.sound.add('bgMusic', { volume: .3, loop: true });
+        this.music = this.sound.add('bgMusic', { volume: .1, loop: true });
         this.punchSound = this.sound.add('punch');
         this.ePunchSound = this.sound.add('punch');
-        this.gameOverMusic = this.sound.add('gameOver', { volume: .3, loop: false });
+        this.gameOverMusic = this.sound.add('gameOver', { volume: .1, loop: false });
         this.music.play();
 
         this.player = new character(this, config.width / 2, config.height * .7, 'player');
@@ -100,7 +100,7 @@ class gameState extends Phaser.Scene {
             this.health[this.player.health - 1].visible = false;
             this.player.health--;
             this.checkPlayerHealth();
-            //this.changeScene();
+            this.changeScene();
         }
 
         //INPUT TO TEST HEALING
@@ -233,9 +233,7 @@ class gameState extends Phaser.Scene {
     //#endregion
 
     changeScene() {
-
         this.music.stop();
-
         this.scene.start('level2', {
             player: this.player //--> Pass player data to save it across scene change
         });
@@ -247,7 +245,7 @@ class gameState extends Phaser.Scene {
         this.canAdvance = true;
         this.changeThumbsUp = true;
         this.thumbsUpFlipFlop = false;
-    }
+    }    
 
     //CHECK IF PLAYER DIES
     checkPlayerHealth() {
