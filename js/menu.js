@@ -37,8 +37,10 @@ class menu extends Phaser.Scene {
         this.load.setPath("assets/sounds/");
         this.load.audio('bgMusic', 'music/mission1.mp3');
         this.load.audio('punch', 'effects/punch.ogg');
+        this.load.audio('kick', 'effects/kick.ogg');
         this.load.audio('gameOver', 'music/game_over.mp3');
         this.load.audio('victoryMusic', 'music/mission_clear.mp3');
+        this.load.audio('thumbsUpEffect', 'effects/thumbs_up.ogg');
 
         //AUDIO
         this.load.setPath("assets/sounds/");

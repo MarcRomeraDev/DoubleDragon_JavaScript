@@ -23,8 +23,11 @@ class gameState extends Phaser.Scene {
                     this.checkPlayerHealth();
                 }
             },
-            callbackScope: this, loop: true
+            callbackScope: this,
+            loop: true
         });
+
+
 
         //STORES EVERY INPUT KEY WE NEED IN THE SCENE
         this.keyboardKeys = this.input.keyboard.addKeys({
@@ -34,8 +37,10 @@ class gameState extends Phaser.Scene {
 
         this.bg1 = this.add.tileSprite(0, 0, 1015, 192, 'background1').setOrigin(0);
         this.music = this.sound.add('bgMusic', { volume: .1, loop: true });
-        this.punchSound = this.sound.add('punch');
-        this.ePunchSound = this.sound.add('punch');
+        this.punchSound = this.sound.add('punch', { volume: .3 });
+        this.ePunchSound = this.sound.add('punch', { volume: .3 });
+        this.kickSound = this.sound.add('kick', { volume: .3 });
+        this.thumbsUpSound = this.sound.add('thumbsUpEffect', { volume: .3 });
         this.gameOverMusic = this.sound.add('gameOver', { volume: .1, loop: false });
         this.music.play();
 
@@ -43,8 +48,8 @@ class gameState extends Phaser.Scene {
         this.loadPlayerData();
 
         this.thumbsUpImage = this.add.sprite(config.width - 40, config.height / 2, 'thumbsUp');
-        this.changeThumbsUp = false;
-        this.thumbsUpImage.visible = false
+        this.changeThumbsUp = true;
+        this.thumbsUpImage.visible = false;
 
         this.isPlayerInAFight = false;
 
@@ -91,7 +96,6 @@ class gameState extends Phaser.Scene {
     }
 
     update() {
-        this.updateThumbsUp();
         this.player.updatePlayer();
         this.updateLevel();
 
@@ -139,17 +143,6 @@ class gameState extends Phaser.Scene {
             this.player.exp = 0;
             this.expText.setText(this.player.exp.toString());
             this.hearts[this.player.level - 1].visible = true;
-        }
-    }
-
-    updateThumbsUp() {
-        if (this.changeThumbsUp) {
-            !this.thumbsUpFlipFlop ? this.thumbsUpImage.visible = true : this.thumbsUpImage.visible = false;
-            this.thumbsUpFlipFlop = !this.thumbsUpFlipFlop;
-            this.changeThumbsUp = false;
-
-            //Timer in ms to call function that triggers swap between backgrounds
-            this.thumbsUpTimer = this.time.delayedCall(450, function () { this.changeThumbsUp = true }, [], this);
         }
     }
     //#endregion
@@ -250,7 +243,18 @@ class gameState extends Phaser.Scene {
         this.numMapSubdivisions -= this.count;
         this.flipFlop = true;
         this.canAdvance = true;
-        this.changeThumbsUp = true;
+        if (this.changeThumbsUp) {
+            this.changeThumbsUp = false;
+            this.thumbsUpTimer = this.time.addEvent({
+                delay: 450, callback: function () {
+                    !this.thumbsUpFlipFlop ? this.thumbsUpImage.visible = true : this.thumbsUpImage.visible = false;
+                    this.thumbsUpFlipFlop = !this.thumbsUpFlipFlop;
+                    this.thumbsUpSound.play();
+                },
+                callbackScope: this,
+                repeat: 3
+            });
+        }
         this.thumbsUpFlipFlop = false;
     }
 

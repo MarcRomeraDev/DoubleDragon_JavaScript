@@ -9,8 +9,9 @@ class level2 extends Phaser.Scene {
     }
 
     create() { //carga los assets en pantalla desde memoria
-        this.punchSound = this.sound.add('punch');
-        this.ePunchSound = this.sound.add('punch');
+        this.punchSound = this.sound.add('punch', { volume: .3 });
+        this.ePunchSound = this.sound.add('punch', { volume: .3 });
+        this.kickSound = this.sound.add('kick', { volume: .3 });
         this.music = this.sound.add('bgMusic', { volume: .1, loop: true });
         this.gameOverMusic = this.sound.add('gameOver', { volume: .1, loop: false });
         this.victoryMusic = this.sound.add('victoryMusic', { volume: .1, loop: false });

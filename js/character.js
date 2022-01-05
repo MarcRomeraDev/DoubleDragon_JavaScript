@@ -95,6 +95,7 @@ class character extends Phaser.GameObjects.Sprite {
         }
         this.kickAnimation.off('animationupdate'); //STOPS LISTENER IF ANIMATION IS IN FRAME 3
         this.scene.physics.world.add(this.attackHitbox.body); //--> ADDS HITBOX WHEN THE ANIMATIONS IS IN ITS THIRD FRAME
+        this.scene.kickSound.play();
       });
 
       this.kickAnimation.on('animationcomplete', function () { this.isAttacking = false; this.attackHitbox.body.enable = false; }, false);
@@ -158,7 +159,7 @@ class character extends Phaser.GameObjects.Sprite {
         this.flipX = false;
         if (this.scene.canAdvance && (this.scene.bg1.tilePositionX < 1015 - (config.width * this.scene.numMapSubdivisions))) {
           if (this.body.x > config.width * 2 / 3) {
-            this.scene.changeThumbsUp = false;
+            this.scene.changeThumbsUp = true;
             this.scene.thumbsUpImage.visible = false
             this.scene.thumbsUpTimer.remove();
             this.scene.bg1.tilePositionX += gamePrefs.backgroundSpeed; //--> Background scroll speed
