@@ -4,9 +4,10 @@ class character extends Phaser.GameObjects.Sprite {
 
     this.scene = _scene;
 
-    //STORES EVERY INPUT KEY WE NEED
+    //STORES EVERY INPUT KEY WE NEED FOR THE PLAYER
     this.keyboardKeys = this.scene.input.keyboard.addKeys({
-      a: Phaser.Input.Keyboard.KeyCodes.A
+      a: Phaser.Input.Keyboard.KeyCodes.A,
+      s: Phaser.Input.Keyboard.KeyCodes.S
     });
 
     this.cursorKeys = this.scene.input.keyboard.createCursorKeys();
@@ -46,13 +47,14 @@ class character extends Phaser.GameObjects.Sprite {
   }
 
   updatePlayer() {
-    this.movePlayerManager();
-    this.updatePlayerHitbox();
+    this.movementManager();
+    this.punchAttack();
+    this.kickAttack();
+    this.updateHitbox();
     this.depth = this.y;
-    this.attackPlayerManager();
   }
 
-  updatePlayerHitbox() {
+  updateHitbox() {
     if (this.anims.currentFrame != null) {
       this.body.setSize(16, 37, true).setOffset(30, 10);
     }
@@ -73,7 +75,15 @@ class character extends Phaser.GameObjects.Sprite {
   }
 
   //#region ATTACK
-  attackPlayerManager() {
+
+  kickAttack() {
+    if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.s)) {
+      this.play('kick', true);
+      this.isAttacking = true;
+    }
+  }
+
+  punchAttack() {
 
     if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.a)) {
       this.wantsToAttack = true;
@@ -111,7 +121,7 @@ class character extends Phaser.GameObjects.Sprite {
   //#endregion
 
   //#region  MOVE
-  movePlayerManager() {
+  movementManager() {
     this.body.setVelocity(0, 0);
     if (!this.isAttacking && this.canMove) {
       if (this.cursorKeys.down.isDown) { // down

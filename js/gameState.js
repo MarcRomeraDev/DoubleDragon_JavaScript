@@ -26,7 +26,7 @@ class gameState extends Phaser.Scene {
             callbackScope: this, loop: true
         });
 
-        //STORES EVERY INPUT KEY WE NEED
+        //STORES EVERY INPUT KEY WE NEED IN THE SCENE
         this.keyboardKeys = this.input.keyboard.addKeys({
             h: Phaser.Input.Keyboard.KeyCodes.H,
             q: Phaser.Input.Keyboard.KeyCodes.Q
@@ -91,9 +91,9 @@ class gameState extends Phaser.Scene {
     }
 
     update() {
+        this.player.updatePlayer();
         this.updateLevel();
         this.updateThumbsUp();
-        this.player.updatePlayer();
 
         //INPUT TO TEST RECIEVE DAMAGE
         if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.h)) {
@@ -162,6 +162,12 @@ class gameState extends Phaser.Scene {
             frameRate: 5,
             yoyo: true,
             repeat: -1
+        });
+
+        this.anims.create({
+            key: 'kick',
+            frames: this.anims.generateFrameNumbers('player', { start: 6, end: 7 }),
+            frameRate: 5
         });
     }
 

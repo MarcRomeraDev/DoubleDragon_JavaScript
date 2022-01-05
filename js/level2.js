@@ -35,7 +35,7 @@ class level2 extends Phaser.Scene {
             callbackScope: this, loop: true
         });
 
-        //STORES EVERY INPUT KEY WE NEED
+        //STORES EVERY INPUT KEY WE NEED IN THE SENE
         this.keyboardKeys = this.input.keyboard.addKeys({
             h: Phaser.Input.Keyboard.KeyCodes.H,
             q: Phaser.Input.Keyboard.KeyCodes.Q
@@ -73,8 +73,8 @@ class level2 extends Phaser.Scene {
     }
 
     update() {
-        this.updateLevel();
         this.player.updatePlayer();
+        this.updateLevel();
         this.updateConveyorBelt();
 
         //INPUT TO TEST RECIEVE DAMAGE
