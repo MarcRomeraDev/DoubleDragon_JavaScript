@@ -187,7 +187,6 @@ class character extends Phaser.GameObjects.Sprite {
         //IF INPUT IS UP TOO MUCH TIME, RESET HEADBUTT INPUT COUNT
         this.headbuttTimer = this.scene.time.delayedCall(200, function () { this.headbuttLeftCount = 0; }, [], this);
       }
-
       if (this.headbuttRight && this.cursorKeys.right.isUp) {
         this.headbuttRight = false;
         //IF INPUT IS UP TOO MUCH TIME, RESET HEADBUTT INPUT COUNT
@@ -202,7 +201,10 @@ class character extends Phaser.GameObjects.Sprite {
         //CHECKS FOR HEADBUTT ATTACK
         if (!this.headbuttLeft) {
           this.headbuttLeft = true;
+          this.headbuttRightCount = 0;
           this.headbuttLeftCount++;
+          console.log(this.headbuttLeftCount);
+          console.log(this.headbuttLeft);
           if (this.headbuttLeftCount >= 2) {
             this.headbuttLeftCount = 0;
             this.headbuttLeft = false;
@@ -219,6 +221,7 @@ class character extends Phaser.GameObjects.Sprite {
         //CHECKS FOR HEADBUTT ATTACK
         if (!this.headbuttRight) {
           this.headbuttRight = true;
+          this.headbuttLeftCount = 0;
           this.headbuttRightCount++;
           if (this.headbuttRightCount >= 2) {
             this.headbuttRightCount = 0;
