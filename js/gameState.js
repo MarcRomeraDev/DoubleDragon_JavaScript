@@ -27,8 +27,6 @@ class gameState extends Phaser.Scene {
             loop: true
         });
 
-
-
         //STORES EVERY INPUT KEY WE NEED IN THE SCENE
         this.keyboardKeys = this.input.keyboard.addKeys({
             h: Phaser.Input.Keyboard.KeyCodes.H,
@@ -151,7 +149,7 @@ class gameState extends Phaser.Scene {
     createPlayerAnims() {
         this.anims.create({
             key: 'run',
-            frames: this.anims.generateFrameNumbers('player', { start: 1, end: 3 }),
+            frames: this.anims.generateFrameNumbers('player', { start: 3, end: 1 }),
             frameRate: 5,
             yoyo: true,
             repeat: -1
@@ -160,6 +158,12 @@ class gameState extends Phaser.Scene {
         this.anims.create({
             key: 'kick',
             frames: this.anims.generateFrameNumbers('player', { frames: [6, 7, 7] }),
+            frameRate: 10
+        });
+
+        this.anims.create({
+            key: 'headbutt',
+            frames: this.anims.generateFrameNumbers('player', { frames: [9, 10, 10] }),
             frameRate: 10
         });
     }
