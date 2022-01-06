@@ -113,7 +113,8 @@ class level2 extends Phaser.Scene {
     }
 
     updateLevel() {
-        if (this.player.exp >= 1000) {
+        if (this.player.exp >= 1000 && this.player.level < 7) {
+            this.levelUpSound.play();
             this.player.level++;
             this.player.exp = 0;
             this.expText.setText(this.player.exp.toString());

@@ -38,6 +38,7 @@ class gameState extends Phaser.Scene {
         this.punchSound = this.sound.add('punch', { volume: .3 });
         this.ePunchSound = this.sound.add('punch', { volume: .3 });
         this.kickSound = this.sound.add('kick', { volume: .3 });
+        this.levelUpSound = this.sound.add('levelUp', { volume: .3 });
         this.thumbsUpSound = this.sound.add('thumbsUpEffect', { volume: .3 });
         this.gameOverMusic = this.sound.add('gameOver', { volume: .1, loop: false });
         this.music.play();
@@ -54,14 +55,14 @@ class gameState extends Phaser.Scene {
         //Stores the sprites of the player's health
         this.health = [];
         for (var i = 0; i < 14; i++) {
-            this.health[i] = this.add.sprite(40 + 4 * i, config.height - 25, 'health').setOrigin(0).setDisplaySize(3, 7);
+            this.health[i] = this.add.sprite(34 + 4 * i, config.height - 25, 'health').setOrigin(0).setDisplaySize(3, 7);
         }
         this.player.health = this.health.length;
 
         //Stores the sprites of the player's hearts (levels)
         this.hearts = [];
-        for (var i = 0; i < 3; i++) {
-            this.hearts[i] = this.add.sprite(39 + 12 * i, config.height - 15, 'heart').setOrigin(0).setDisplaySize(12, 9);
+        for (var i = 0; i < 7; i++) {
+            this.hearts[i] = this.add.sprite(32 + 9 * i, config.height - 15, 'heart').setOrigin(0).setDisplaySize(10, 8);
             if (i > 0) {
                 this.hearts[i].visible = false;
             }
@@ -136,7 +137,8 @@ class gameState extends Phaser.Scene {
     }
 
     updateLevel() {
-        if (this.player.exp >= 1000) {
+        if (this.player.exp >= 1000 && this.player.level < 7) {
+            this.levelUpSound.play();
             this.player.level++;
             this.player.exp = 0;
             this.expText.setText(this.player.exp.toString());
