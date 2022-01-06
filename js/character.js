@@ -38,17 +38,9 @@ class character extends Phaser.GameObjects.Sprite {
     this.headbuttLeftCount = 0;
     this.headbuttRight = false;
     this.headbuttLeft = false;
-    this.headbuttTimer;
     //#endregion
 
     this.setFrame(1);
-
-    //  37 = LEFT
-    //  38 = UP
-    //  39 = RIGHT
-    //  40 = DOWN
-    // this.headButtRight = this.scene.input.keyboard.createCombo([39, 39], { resetOnMatch: true, maxKeyDelay: 350 });
-    // this.headButtLeft = this.scene.input.keyboard.createCombo([37, 37], { resetOnMatch: true, maxKeyDelay: 350 });
   }
 
   preUpdate(time, delta) {
@@ -91,9 +83,6 @@ class character extends Phaser.GameObjects.Sprite {
     if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.a)) {
       this.punchAttack();
     }
-    // if (this.cursorKeys.left.isDown || this.cursorKeys.right.isDown) {
-    //   this.scene.input.keyboard.on('keycombomatch', function () { this.headButtAttack(); }, this);
-    // }
   }
 
   headbuttAttack() {
@@ -110,7 +99,7 @@ class character extends Phaser.GameObjects.Sprite {
         }
         this.headbuttAnimation.off('animationupdate'); //STOPS LISTENER IF ANIMATION IS IN FRAME 3
         this.scene.physics.world.add(this.attackHitbox.body); //--> ADDS HITBOX WHEN THE ANIMATIONS IS IN ITS THIRD FRAME
-        this.scene.kickSound.play();
+        this.scene.punchSound.play();
       });
 
       this.headbuttAnimation.on('animationcomplete', function () { this.isAttacking = false; this.attackHitbox.body.enable = false; }, this);
