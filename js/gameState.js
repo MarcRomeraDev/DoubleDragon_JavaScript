@@ -124,8 +124,8 @@ class gameState extends Phaser.Scene {
         this.expText.setText(this.player.exp);
     }
 
-    updateScore() {
-        this.player.score += 50; //SCORE EARNED DEPENDS ON ATTACK USED
+    updateScore(score) {
+        this.player.score += score; //SCORE EARNED DEPENDS ON ATTACK USED
         this.scoreNumbersText.setText(this.player.score);
 
         if (this.player.score >= this.player.highScore) {

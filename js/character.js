@@ -23,6 +23,8 @@ class character extends Phaser.GameObjects.Sprite {
     this.scene.physics.add.existing(this.attackHitbox);
     this.attackHitbox.body.enable = false;
 
+    this.attackHitbox.type = "";
+
     //#region PLAYER DATA
     this.isDead = false;
     this.level = 1;
@@ -48,9 +50,11 @@ class character extends Phaser.GameObjects.Sprite {
   }
 
   updatePlayer() {
-    this.movementManager();
-    this.attackManager();
-    this.updateHitbox();
+    if (!this.isDead) {
+      this.movementManager();
+      this.attackManager();
+      this.updateHitbox();
+    }
     this.depth = this.y;
   }
 
@@ -92,6 +96,7 @@ class character extends Phaser.GameObjects.Sprite {
 
       this.attackHitbox.x = this.flipX ? this.x - this.width * 0.2 : this.x + this.width * 0.2;
       this.attackHitbox.y = this.y - this.height * 0.1;
+      this.attackHitbox.type = 'HEADBUTT';
 
       this.headbuttAnimation.on('animationupdate', function () {
         if (this.headbuttAnimation.anims.currentFrame.index < 3) {
@@ -113,6 +118,8 @@ class character extends Phaser.GameObjects.Sprite {
 
       this.attackHitbox.x = this.flipX ? this.x - this.width * 0.2 : this.x + this.width * 0.2;
       this.attackHitbox.y = this.y + this.height * 0.1;
+
+      this.attackHitbox.type = 'KICK';
 
       this.kickAnimation.on('animationupdate', function () {
         if (this.kickAnimation.anims.currentFrame.index < 3) {
@@ -145,6 +152,8 @@ class character extends Phaser.GameObjects.Sprite {
       //Sets hitbox position infront of player and facing same way as player
       this.attackHitbox.x = this.flipX ? this.x - this.width * 0.2 : this.x + this.width * 0.2;
       this.attackHitbox.y = this.y - this.height * 0.1;
+
+      this.attackHitbox.type = 'PUNCH';
 
       this.scene.physics.world.add(this.attackHitbox.body); //--> Adds hitbox to the attack when pressing input
 
