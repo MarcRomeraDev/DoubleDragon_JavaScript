@@ -105,8 +105,8 @@ class gameState extends Phaser.Scene {
             this.changeScene();
         }
 
-        //INPUT TO TEST HEALING
-        if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.q)) {
+            //INPUT TO TEST HEALING
+            if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.q)) {
             if (this.player.health < 14) {
                 this.player.health++;
                 this.health[this.player.health - 1].visible = true;

@@ -50,9 +50,11 @@ class character extends Phaser.GameObjects.Sprite {
   }
 
   updatePlayer() {
-    this.movementManager();
-    this.attackManager();
-    this.updateHitbox();
+    if (!this.isDead) {
+      this.movementManager();
+      this.attackManager();
+      this.updateHitbox();
+    }
     this.depth = this.y;
   }
 
