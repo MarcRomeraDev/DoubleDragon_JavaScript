@@ -18,7 +18,7 @@ class waveSystemManager extends Phaser.GameObjects.Sprite {
         this.checkEvent();
     }
     dmgEnemy(_hitbox, _enemy) {
-        _enemy.hit();
+        _enemy.hit(_hitbox.dmg);
     }
     checkEvent() {
         console.log("Event Counter: " + this.counter);
@@ -105,10 +105,10 @@ class waveSystemManager extends Phaser.GameObjects.Sprite {
 
             switch (_type) {
                 case 'williams':
-                    _enemy = new enemyWilliams(this.scene, _posX, _posY, _type, this.scene.player, 3, 1);
+                    _enemy = new enemyWilliams(this.scene, _posX, _posY, _type, this.scene.player, 3, 12);
                     break;
                 case 'lindas':
-                    _enemy = new enemyLindas(this.scene, _posX, _posY, _type, this.scene.player, 3, 1);
+                    _enemy = new enemyLindas(this.scene, _posX, _posY, _type, this.scene.player, 3, 12);
                     break;
                 case 'lopars':
                     _enemy = new enemyWilliams(this.scene, _posX, _posY, 'williams', this.scene.player, 3, 1);
@@ -126,10 +126,10 @@ class waveSystemManager extends Phaser.GameObjects.Sprite {
                 this.enemies.remove(_enemy);
                 switch (_type) {
                     case 'williams':
-                        _enemy = new enemyWilliams(this.scene, _posX, _posY, _type, this.scene.player, 3, 1);
+                        _enemy = new enemyWilliams(this.scene, _posX, _posY, _type, this.scene.player, 3, 12);
                         break;
                     case 'lindas':
-                        _enemy = new enemyLindas(this.scene, _posX, _posY, _type, this.scene.player, 3, 1);
+                        _enemy = new enemyLindas(this.scene, _posX, _posY, _type, this.scene.player, 3, 12);
                         break;
                     case 'lopars':
                         _enemy = new enemyWilliams(this.scene, _posX, _posY, 'williams', this.scene.player, 3, 1);

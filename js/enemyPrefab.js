@@ -55,6 +55,7 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
         if (this.isVulnerable && Phaser.Math.Distance.Between(0, _enemy.body.y, 0, this.scene.player.body.y - gamePrefs.heightPunchingThreshold) < 1) {
             this.scene.updateExp(20); //-->UPDATE PLAYER EXP
             this.scene.updateScore(); //--> UPDATE PLAYER SCORE AND HIGH SCORE
+
             if (!this.hasWeapon)
                 _enemy.anims.play(this.eType + 'run', false);
             else
@@ -198,7 +199,7 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
                                 this.switchLanesTimer = this.scene.time.delayedCall(200, this.resetSwitchLanes, [], this);
                             }
                             else
-                                _enemy.body.velocity.x = gamePrefs.enemySpeed* 2.5;
+                                _enemy.body.velocity.x = gamePrefs.enemySpeed * 2.5;
                         }
                         else {
                             if (distanceX < gamePrefs.attackRange * 0.5 && _enemy.flipX != _hero.flipX) {
@@ -207,7 +208,7 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
                                 this.switchLanesTimer = this.scene.time.delayedCall(200, this.resetSwitchLanes, [], this);
                             }
                             else
-                                _enemy.body.velocity.x = -gamePrefs.enemySpeed* 2.5;
+                                _enemy.body.velocity.x = -gamePrefs.enemySpeed * 2.5;
                         }
                     }
                     else {
@@ -287,8 +288,8 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
             else {
                 _enemy.body.velocity.x = -gamePrefs.enemySpeed;
             }
-            if(this.eMoveState != "DEAD")
-            this.getUpTimer = this.scene.time.delayedCall(500, this.getUp, [_enemy], this);
+            if (this.eMoveState != "DEAD")
+                this.getUpTimer = this.scene.time.delayedCall(500, this.getUp, [_enemy], this);
         }
         else { _enemy.body.velocity.x = 0; }
 
@@ -305,7 +306,7 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
     resetSwitchLanes() {
         this.switchLanes = false;
     }
-    
+
     getUp(_enemy) {
         this.body.velocity.x = 0;
         //_enemy.anims.play(this.eType + 'die', false);
@@ -313,8 +314,7 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
             this.getUpTimer = this.scene.time.delayedCall(500, this.resetEnemyFrameToGetUp, [_enemy], this);
         //_enemy.setFrame(10);
     }
-    pickUpWeapon(_enemy)
-    {
+    pickUpWeapon(_enemy) {
         this.eMoveState = "KNOCKED_DOWN";
         this.body.velocity.x = 0;
         //_enemy.anims.play(this.eType + 'die', false);
