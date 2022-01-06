@@ -82,8 +82,8 @@ class enemyLindas extends enemyPrefab {
     }
 
 
-    hit(_dmg) {
-        this.takeDmg(this, _dmg);
+    hit(attackType) {
+        this.takeDmg(this, attackType);
     }
 
 }

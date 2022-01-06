@@ -105,8 +105,8 @@ class gameState extends Phaser.Scene {
             this.changeScene();
         }
 
-            //INPUT TO TEST HEALING
-            if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.q)) {
+        //INPUT TO TEST HEALING
+        if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.q)) {
             if (this.player.health < 14) {
                 this.player.health++;
                 this.health[this.player.health - 1].visible = true;
@@ -124,8 +124,8 @@ class gameState extends Phaser.Scene {
         this.expText.setText(this.player.exp);
     }
 
-    updateScore() {
-        this.player.score += 50; //SCORE EARNED DEPENDS ON ATTACK USED
+    updateScore(score) {
+        this.player.score += score; //SCORE EARNED DEPENDS ON ATTACK USED
         this.scoreNumbersText.setText(this.player.score);
 
         if (this.player.score >= this.player.highScore) {

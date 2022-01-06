@@ -23,7 +23,7 @@ class character extends Phaser.GameObjects.Sprite {
     this.scene.physics.add.existing(this.attackHitbox);
     this.attackHitbox.body.enable = false;
 
-    this.attackHitbox.dmg = 1;
+    this.attackHitbox.type = "";
 
     //#region PLAYER DATA
     this.isDead = false;
@@ -96,7 +96,7 @@ class character extends Phaser.GameObjects.Sprite {
 
       this.attackHitbox.x = this.flipX ? this.x - this.width * 0.2 : this.x + this.width * 0.2;
       this.attackHitbox.y = this.y - this.height * 0.1;
-      this.attackHitbox.dmg = 2;
+      this.attackHitbox.type = 'HEADBUTT';
 
       this.headbuttAnimation.on('animationupdate', function () {
         if (this.headbuttAnimation.anims.currentFrame.index < 3) {
@@ -119,7 +119,7 @@ class character extends Phaser.GameObjects.Sprite {
       this.attackHitbox.x = this.flipX ? this.x - this.width * 0.2 : this.x + this.width * 0.2;
       this.attackHitbox.y = this.y + this.height * 0.1;
 
-      this.attackHitbox.dmg = 2;
+      this.attackHitbox.type = 'KICK';
 
       this.kickAnimation.on('animationupdate', function () {
         if (this.kickAnimation.anims.currentFrame.index < 3) {
@@ -153,7 +153,7 @@ class character extends Phaser.GameObjects.Sprite {
       this.attackHitbox.x = this.flipX ? this.x - this.width * 0.2 : this.x + this.width * 0.2;
       this.attackHitbox.y = this.y - this.height * 0.1;
 
-      this.attackHitbox.dmg = 1;
+      this.attackHitbox.type = 'PUNCH';
 
       this.scene.physics.world.add(this.attackHitbox.body); //--> Adds hitbox to the attack when pressing input
 

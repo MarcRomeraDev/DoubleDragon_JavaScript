@@ -18,7 +18,7 @@ class waveSystemManager extends Phaser.GameObjects.Sprite {
         this.checkEvent();
     }
     dmgEnemy(_hitbox, _enemy) {
-        _enemy.hit(_hitbox.dmg);
+        _enemy.hit(_hitbox.type);
     }
     checkEvent() {
         console.log("Event Counter: " + this.counter);

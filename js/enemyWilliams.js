@@ -59,8 +59,8 @@ class enemyWilliams extends enemyPrefab {
     }
     giveWeapon() { }
 
-    hit(_dmg) {
-        this.takeDmg(this, _dmg);
+    hit(attackType) {
+        this.takeDmg(this, attackType);
     }
 
 }

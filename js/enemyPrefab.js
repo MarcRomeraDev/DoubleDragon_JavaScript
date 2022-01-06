@@ -7,6 +7,7 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
         this.scene = _scene;
         this.maxHealth = _health;
         this.dmg = _dmg;
+        this.dmgTaken = 0;
         this.direction = 1;
         this.hasWeapon = false;
         this.init();
@@ -51,16 +52,35 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
     dropWeapon() {
         this.hasWeapon = false;
     }
-    takeDmg(_enemy, _dmgTaken, _forceKnockDown = false) {
+    takeDmg(_enemy, _attackType, _forceKnockDown = false) {
         if (this.isVulnerable && Phaser.Math.Distance.Between(0, _enemy.body.y, 0, this.scene.player.body.y - gamePrefs.heightPunchingThreshold) < 1) {
-            this.scene.updateExp(20); //-->UPDATE PLAYER EXP
-            this.scene.updateScore(); //--> UPDATE PLAYER SCORE AND HIGH SCORE
+
+            switch (_attackType) {
+                case 'PUNCH':
+                    this.dmgTaken = 1;
+                    this.scene.updateExp(20); //-->UPDATE PLAYER EXP
+                    this.scene.updateScore(50); //--> UPDATE PLAYER SCORE AND HIGH SCORE
+                    break;
+                case 'HEADBUTT':
+                    this.dmgTaken = 2;
+                    this.scene.updateExp(12); //-->UPDATE PLAYER EXP
+                    this.scene.updateScore(700); //--> UPDATE PLAYER SCORE AND HIGH SCORE
+                    break;
+                case 'KICK':
+                    this.dmgTaken = 2;
+                    this.scene.updateExp(15); //-->UPDATE PLAYER EXP
+                    this.scene.updateScore(70); //--> UPDATE PLAYER SCORE AND HIGH SCORE
+                    break;
+                default:
+                    break;
+
+            }
 
             if (!this.hasWeapon)
                 _enemy.anims.play(this.eType + 'run', false);
             else
                 _enemy.anims.play(this.eType + 'runweapon', false);
-            this.health -= _dmgTaken;
+            this.health -= this.dmgTaken;
             this.isVulnerable = false;
             _enemy.body.velocity.y = 0;
             _enemy.body.velocity.x = 0;
