@@ -91,7 +91,6 @@ class level2 extends Phaser.Scene {
             if (this.player.health < 14) {
                 this.player.health++;
                 this.health[this.player.health - 1].visible = true;
-                console.log("Health: ", this.player.health);
             }
         }
     }
@@ -164,7 +163,7 @@ class level2 extends Phaser.Scene {
         this.player.canMove = false;
         this.player.body.gravity.y = 4000;
         this.player.body.collideWorldBounds = false; //--> Collision with world border walls
-        this.deathTimer = this.time.delayedCall(2000, function killPlayer() { this.player.health = 0; this.checkPlayerHealth(); }, [], this);
+        this.deathTimer = this.time.delayedCall(2000, function () { this.player.health = 0; this.checkPlayerHealth(); }, [], this);
     }
 
     // makeEnemiesFall() {

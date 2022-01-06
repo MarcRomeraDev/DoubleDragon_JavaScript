@@ -34,9 +34,21 @@ class character extends Phaser.GameObjects.Sprite {
     this.canMove = true;
     this.isAttacking = false;
     this.attackFlipFlop = false;
+    this.headbuttRightCount = 0;
+    this.headbuttLeftCount = 0;
+    this.headbuttRight = false;
+    this.headbuttLeft = false;
+    this.headbuttTimer;
     //#endregion
 
     this.setFrame(1);
+
+    //  37 = LEFT
+    //  38 = UP
+    //  39 = RIGHT
+    //  40 = DOWN
+    // this.headButtRight = this.scene.input.keyboard.createCombo([39, 39], { resetOnMatch: true, maxKeyDelay: 350 });
+    // this.headButtLeft = this.scene.input.keyboard.createCombo([37, 37], { resetOnMatch: true, maxKeyDelay: 350 });
   }
 
   preUpdate(time, delta) {
@@ -78,6 +90,30 @@ class character extends Phaser.GameObjects.Sprite {
 
     if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.a)) {
       this.punchAttack();
+    }
+    // if (this.cursorKeys.left.isDown || this.cursorKeys.right.isDown) {
+    //   this.scene.input.keyboard.on('keycombomatch', function () { this.headButtAttack(); }, this);
+    // }
+  }
+
+  headbuttAttack() {
+    if (!this.isAttacking) {
+      this.isAttacking = true;
+      this.headbuttAnimation = this.play('headbutt', true);
+
+      this.attackHitbox.x = this.flipX ? this.x - this.width * 0.2 : this.x + this.width * 0.2;
+      this.attackHitbox.y = this.y - this.height * 0.1;
+
+      this.headbuttAnimation.on('animationupdate', function () {
+        if (this.headbuttAnimation.anims.currentFrame.index < 3) {
+          return;
+        }
+        this.headbuttAnimation.off('animationupdate'); //STOPS LISTENER IF ANIMATION IS IN FRAME 3
+        this.scene.physics.world.add(this.attackHitbox.body); //--> ADDS HITBOX WHEN THE ANIMATIONS IS IN ITS THIRD FRAME
+        this.scene.kickSound.play();
+      });
+
+      this.headbuttAnimation.on('animationcomplete', function () { this.isAttacking = false; this.attackHitbox.body.enable = false; }, this);
     }
   }
 
@@ -148,15 +184,52 @@ class character extends Phaser.GameObjects.Sprite {
         }
       }
 
+      if (this.headbuttLeft && this.cursorKeys.left.isUp) {
+        this.headbuttLeft = false;
+        //IF INPUT IS UP TOO MUCH TIME, RESET HEADBUTT INPUT COUNT
+        this.headbuttTimer = this.scene.time.delayedCall(200, function () { this.headbuttLeftCount = 0; }, [], this);
+      }
+
+      if (this.headbuttRight && this.cursorKeys.right.isUp) {
+        this.headbuttRight = false;
+        //IF INPUT IS UP TOO MUCH TIME, RESET HEADBUTT INPUT COUNT
+        this.headbuttTimer = this.scene.time.delayedCall(200, function () { this.headbuttRightCount = 0; }, [], this);
+      }
+
       if (this.cursorKeys.left.isDown) { //left
         this.body.setVelocityX(-gamePrefs.playerSpeed);
         this.play('run', true);
         this.flipX = true;
+
+        //CHECKS FOR HEADBUTT ATTACK
+        if (!this.headbuttLeft) {
+          this.headbuttLeft = true;
+          this.headbuttLeftCount++;
+          if (this.headbuttLeftCount >= 2) {
+            this.headbuttLeftCount = 0;
+            this.headbuttLeft = false;
+            this.headbuttTimer.remove();
+            this.headbuttAttack();
+          }
+        }
       }
       else if (this.cursorKeys.right.isDown) { // right
         this.body.setVelocityX(gamePrefs.playerSpeed);
         this.play('run', true);
         this.flipX = false;
+
+        //CHECKS FOR HEADBUTT ATTACK
+        if (!this.headbuttRight) {
+          this.headbuttRight = true;
+          this.headbuttRightCount++;
+          if (this.headbuttRightCount >= 2) {
+            this.headbuttRightCount = 0;
+            this.headbuttRight = false;
+            this.headbuttTimer.remove();
+            this.headbuttAttack();
+          }
+        }
+
         if (this.scene.canAdvance && (this.scene.bg1.tilePositionX < 1015 - (config.width * this.scene.numMapSubdivisions))) {
           if (this.body.x > config.width * 2 / 3) {
             this.scene.changeThumbsUp = true;
@@ -178,8 +251,9 @@ class character extends Phaser.GameObjects.Sprite {
         }
       }
 
-      if (this.body.velocity.x == 0 && this.body.velocity.y == 0)
+      if (this.body.velocity.x == 0 && this.body.velocity.y == 0) {
         this.setFrame(1);
+      }
     }
   }
   //#endregion
