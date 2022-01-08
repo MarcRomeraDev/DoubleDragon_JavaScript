@@ -109,7 +109,8 @@ class gameState extends Phaser.Scene {
 
         //INPUT TO TEST RECIEVE DAMAGE
         if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.h)) {
-            this.dmgPlayer();
+           //this.dmgPlayer();
+           this.changeScene();
         }
 
         //INPUT TO TEST HEALING

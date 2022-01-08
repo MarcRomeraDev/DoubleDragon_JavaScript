@@ -239,7 +239,8 @@ class character extends Phaser.GameObjects.Sprite {
             this.scene.thumbsUpTimer.remove();
             this.scene.bg1.tilePositionX += gamePrefs.backgroundSpeed; //--> Background scroll speed
             this.body.velocity.x = 0.001;
-
+            if(this.scene.hasWeapon)
+                this.scene.weapon.isBackgroundMoving = true;
             this.scene.waveSystem.moveAllEnemiesWhenWalking();
           }
 
@@ -250,6 +251,7 @@ class character extends Phaser.GameObjects.Sprite {
         else {
           this.scene.canAdvance = false;
           this.scene.flipFlop = false;
+          
         }
       }
 
