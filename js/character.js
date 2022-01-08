@@ -40,6 +40,7 @@ class character extends Phaser.GameObjects.Sprite {
     this.headbuttLeftCount = 0;
     this.headbuttRight = false;
     this.headbuttLeft = false;
+    this.isInFloor = false;
     //#endregion
 
     this.setFrame(1);
@@ -80,12 +81,14 @@ class character extends Phaser.GameObjects.Sprite {
 
   //#region ATTACK
   attackManager() {
-    if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.s)) {
-      this.kickAttack();
-    }
+    if (!this.isInFloor) {
+      if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.s)) {
+        this.kickAttack();
+      }
 
-    if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.a)) {
-      this.punchAttack();
+      if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.a)) {
+        this.punchAttack();
+      }
     }
   }
 
@@ -203,8 +206,6 @@ class character extends Phaser.GameObjects.Sprite {
           this.headbuttLeft = true;
           this.headbuttRightCount = 0;
           this.headbuttLeftCount++;
-          console.log(this.headbuttLeftCount);
-          console.log(this.headbuttLeft);
           if (this.headbuttLeftCount >= 2) {
             this.headbuttLeftCount = 0;
             this.headbuttLeft = false;
