@@ -14,7 +14,8 @@ var gamePrefs =
     backgroundSpeed: 1,
     heightPunchingThreshold: 4,
     whipDuration: 300,
-    lindaWeaponAttackRate: 450
+    lindaWeaponAttackRate: 450,
+    loparthrowingRecoverTime: 1000
 }
 var sceneVars =
 {

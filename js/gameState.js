@@ -13,7 +13,7 @@ class gameState extends Phaser.Scene {
         this.maxY = config.height / 2 + 5;
         this.minY = 2 / 3 * config.height + 5;
         this.beltForce = -5;
-
+        
         this.gameTimer = this.time.addEvent({
             delay: 1000, callback: function () {
                 this.gameTime--;
@@ -68,6 +68,7 @@ class gameState extends Phaser.Scene {
             }
         }
 
+        
         this.flipFlop = false;
         this.numMapSubdivisions = 1015 / config.width;
         this.count = this.numMapSubdivisions / 4;
@@ -75,9 +76,18 @@ class gameState extends Phaser.Scene {
         this.createPlayerAnims();
         this.createWilliamsAnims();
         this.createLindasAnims();
+        this.createLoparAnims();
+        this.playerVulnerable = true;
+        
 
         this.waveSystem = new waveSystemManager(this);
 
+        /*this.barrel  = this.add.sprite(config.width - 40, config.height / 2, 'barrel');
+        this.whip  = this.add.sprite(config.width - 40, config.height / 2, 'whip');
+        this.weapons.add(this.barrel);
+        this.weapons.add(this.whip);*/
+        this.weapon;
+        this.hasWeapon = false;
         this.physics.add.overlap(this.player.attackHitbox, this.waveSystem.enemies, this.waveSystem.dmgEnemy, null, this.waveSystem);
 
         this.playerText = this.add.text(20, config.height - 20, '1P', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //player
@@ -100,10 +110,7 @@ class gameState extends Phaser.Scene {
 
         //INPUT TO TEST RECIEVE DAMAGE
         if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.h)) {
-            this.health[this.player.health - 1].visible = false;
-            this.player.health--;
-            this.checkPlayerHealth();
-            this.changeScene();
+           this.dmgPlayer();
         }
 
         //INPUT TO TEST HEALING
@@ -113,6 +120,26 @@ class gameState extends Phaser.Scene {
                 this.health[this.player.health - 1].visible = true;
             }
         }
+    }
+    dmgPlayer(hit,player)
+    {
+        //call animation
+        
+        if(this.playerVulnerable)
+        {
+            console.log(hit.knockDownPlayer);
+            this.playerVulnerable = false;
+            this.vulnerabilityTimer = this.time.delayedCall(gamePrefs.knockDownTimer, this.changeVulnerability, [], this);
+
+            this.health[this.player.health - 1].visible = false;
+            this.player.health--;
+            this.checkPlayerHealth();
+        }
+        //this.changeScene();
+    }
+    changeVulnerability()
+    {
+        this.playerVulnerable = true;
     }
 
     loadPlayerData() {
@@ -125,6 +152,11 @@ class gameState extends Phaser.Scene {
         this.expText.setText(this.player.exp);
     }
 
+    createWeapon(_posx,_posY,_tag,velX,velY,_throwerY)
+    {
+        this.weapon = new weapon(this,_posx,_posY,_tag,velX,velY,_throwerY);
+        this.hasWeapon = true;
+    }
     updateScore(score) {
         this.player.score += score; //SCORE EARNED DEPENDS ON ATTACK USED
         this.scoreNumbersText.setText(this.player.score);
@@ -236,6 +268,49 @@ class gameState extends Phaser.Scene {
             repeat: 0
         });
     }
+    createLoparAnims() {
+        this.anims.create({
+            key: 'loparsrun',
+            frames: this.anims.generateFrameNumbers('lopars', { start: 0, end: 2 }),
+            frameRate: 5,
+            yoyo: true,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'loparsrunweapon',
+            frames: this.anims.generateFrameNumbers('lopars', { frames: [17, 16, 15] }),
+            frameRate: 5,
+            yoyo: true,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'loparsattackweapon',
+            frames: this.anims.generateFrameNumbers('lopars', { frames: [12, 11] }),
+            frameRate: 10,
+            repeat: 0
+        });
+        this.anims.create({
+            key: 'loparstakeDmg',
+            frames: this.anims.generateFrameNumbers('lopars', { start: 5, end: 7 }),
+            frameRate: 5,
+            yoyo: true,
+            repeat: 0
+        });
+        this.anims.create({
+            key: 'loparstakeDmgweapon',
+            frames: this.anims.generateFrameNumbers('lopars', { frames: [17,14] }),
+            frameRate: 5,
+            yoyo: true,
+            repeat: 0
+        });
+        this.anims.create({
+            key: 'loparsdie',
+            frames: this.anims.generateFrameNumbers('lopars', { start: 8, end: 9 }),
+            frameRate: 5,
+            yoyo: false,
+            repeat: 0
+        });
+    }
     //#endregion
 
     changeScene() {
@@ -247,6 +322,11 @@ class gameState extends Phaser.Scene {
 
     advanceInScene() {
         this.numMapSubdivisions -= this.count;
+        if(this.hasWeapon)
+        {
+            this.weapon.destroy();
+            this.hasWeapon = false;
+        }
         this.flipFlop = true;
         this.canAdvance = true;
         if (this.changeThumbsUp) {

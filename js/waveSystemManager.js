@@ -20,6 +20,17 @@ class waveSystemManager extends Phaser.GameObjects.Sprite {
     dmgEnemy(_hitbox, _enemy) {
         _enemy.hit(_hitbox.type);
     }
+    giveWeapon(_hitbox, _enemy) {
+        if(_enemy.seekingWeapon == true && Phaser.Math.Distance.Between(0, _enemy.body.y+39, 0,_hitbox.body.y+17) <= 1)
+        {
+        _enemy.giveWeapon();
+        this.scene.hasWeapon = false;
+        this.scene.weapon.line.body.enable = false;
+        this.scene.weapon.destroy();
+        }
+
+
+    }
     checkEvent() {
         console.log("Event Counter: " + this.counter);
         if (this.state == "ACTIVE") {
@@ -27,13 +38,13 @@ class waveSystemManager extends Phaser.GameObjects.Sprite {
                 case 0:
                     //Spawn 2 williams at start
                     
-                    this.createEnemy((config.width * 2 / 3) + 20, (config.height * 2 / 3) + 20, 'williams');
-                    this.createEnemy(config.width * 8 / 10, (config.height * 2 / 3) - 20, 'williams');
+                    this.createEnemy((config.width * 2 / 3) + 20, (config.height * 2 / 3) + 20, 'lopars');
+                    this.createEnemy(config.width * 8 / 10, (config.height * 2 / 3) - 20, 'lopars',true);
 
                     break;
                 case 1:
                     //Spawn 1 william appears
-                    this.createEnemy(config.width + 50, config.height / 2, 'lindas');
+                    this.createEnemy(config.width + 50, config.height / 2, 'williams');
                     break;
                 case 3:
                     //Move Screen
@@ -48,7 +59,7 @@ class waveSystemManager extends Phaser.GameObjects.Sprite {
                     //while advancing, 2 lopars will appear, one with nothing and one with a barrel
                     this.scene.advanceInScene();
                     this.createEnemy((config.width + 50), (config.height / 3), 'lopars');
-                    this.createEnemy((config.width + 100), (config.height / 8), 'lopars'); // The third one will be called directly by the scene when the player arrives to the end
+                    this.createEnemy((config.width + 100), (config.height / 8), 'lopars', true); // The third one will be called directly by the scene when the player arrives to the end
                     // of the parking lot
                     break;
                 case 9: // advacing to the end of the level
@@ -111,7 +122,7 @@ class waveSystemManager extends Phaser.GameObjects.Sprite {
                     _enemy = new enemyLindas(this.scene, _posX, _posY, _type, this.scene.player, 3, 1);
                     break;
                 case 'lopars':
-                    _enemy = new enemyWilliams(this.scene, _posX, _posY, 'williams', this.scene.player, 3, 1);
+                    _enemy = new enemyLopars(this.scene, _posX, _posY, _type, this.scene.player, 3, 1);
                     break;
                 default:
                     // _enemy = new enemyWilliams(this, config.width / 3, 304, _type, this.player, 3, 10);
@@ -132,7 +143,7 @@ class waveSystemManager extends Phaser.GameObjects.Sprite {
                         _enemy = new enemyLindas(this.scene, _posX, _posY, _type, this.scene.player, 3, 1);
                         break;
                     case 'lopars':
-                        _enemy = new enemyWilliams(this.scene, _posX, _posY, 'williams', this.scene.player, 3, 1);
+                        _enemy = new enemyLopars(this.scene, _posX, _posY, _type, this.scene.player, 3, 1);
                         break;
                     default:
                         // _enemy = new enemyWilliams(this, config.width / 3, 304, _type, this.player, 3, 10);
