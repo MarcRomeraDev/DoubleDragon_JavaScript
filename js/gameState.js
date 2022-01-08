@@ -125,6 +125,7 @@ class gameState extends Phaser.Scene {
         if (this.player.canMove) {
             this.player.canMove = false;
             this.player.stop();
+            this.player.attackHitbox.body.enable = false;
 
             //KNOCK DOWN TAKE DAMAGE ANIMATION
             if (hit.knockDownPlayer) {

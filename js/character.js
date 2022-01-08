@@ -24,7 +24,7 @@ class character extends Phaser.GameObjects.Sprite {
     this.attackHitbox.body.enable = false;
 
     this.attackHitbox.type = "";
-    
+
     //#region PLAYER DATA
     this.isDead = false;
     this.level = 1;
@@ -73,6 +73,9 @@ class character extends Phaser.GameObjects.Sprite {
     this.body.collideWorldBounds = true;
     this.body.gravity.y = 0;
     this.isDead = false;
+    if (this.flipX) {
+      this.flipX = false;
+    }
     this.body.reset(config.width / 10, config.height / 2 + 22);
     if (this.lifes < 0) {
       this.visible = false;
@@ -236,8 +239,8 @@ class character extends Phaser.GameObjects.Sprite {
             this.scene.thumbsUpTimer.remove();
             this.scene.bg1.tilePositionX += gamePrefs.backgroundSpeed; //--> Background scroll speed
             this.body.velocity.x = 0.001;
-            if(this.scene.hasWeapon)
-                this.scene.weapon.isBackgroundMoving = true;
+            if (this.scene.hasWeapon)
+              this.scene.weapon.isBackgroundMoving = true;
             this.scene.waveSystem.moveAllEnemiesWhenWalking();
           }
 
@@ -248,7 +251,7 @@ class character extends Phaser.GameObjects.Sprite {
         else {
           this.scene.canAdvance = false;
           this.scene.flipFlop = false;
-          
+
         }
       }
 
