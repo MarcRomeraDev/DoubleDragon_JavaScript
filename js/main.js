@@ -11,6 +11,7 @@ var gamePrefs =
     punchCollisionDuration: 35,
     vulnerableTimer: 300,
     knockDownTimer: 2000,
+    barrelTimer: 1700,
     backgroundSpeed: 1,
     heightPunchingThreshold: 4,
     whipDuration: 300,

@@ -70,7 +70,7 @@ class enemyLopars extends enemyPrefab {
     }
     dropWeapon() {
   
-        this.scene.createWeapon(this.body.x,this.body.y,'barrel',90*this.direction,10*this.direction,this.body.y+39);
+        this.scene.createWeapon(this.body.x,this.body.y,'barrel',70*this.direction,10*this.direction,this.body.y+39);
         super.dropWeapon();
     }
     resetEnemy() {

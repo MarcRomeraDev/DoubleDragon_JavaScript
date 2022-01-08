@@ -166,6 +166,7 @@ class level2 extends Phaser.Scene {
         this.player.isDead = true;
         this.player.body.gravity.y = 300;
         this.player.body.collideWorldBounds = false; //--> Collision with world border walls
+        this.player.isAttacking = false;
         this.deathTimer = this.time.delayedCall(2000, function () { this.player.health = 0; this.checkPlayerHealth(); }, [], this);
     }
 

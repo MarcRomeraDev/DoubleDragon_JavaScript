@@ -14,6 +14,8 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
         this.init();
         this.enemyHitbox = this.scene.add.rectangle(config.width / 2 + 20, config.height * .68, 15, 10, 0xffffff, 0);
         this.scene.physics.add.existing(this.enemyHitbox);
+        this.scene.physics.add.overlap(this.enemyHitbox, this.scene.player, this.scene.dmgPlayer, null, this.scene);
+
         this.enemyHitbox.body.enable = false;
     }
 
@@ -54,7 +56,7 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
         this.hasWeapon = false;
     }
     takeDmg(_enemy, _attackType, _forceKnockDown = false) {
-        if (this.isVulnerable && Phaser.Math.Distance.Between(0, _enemy.body.y, 0, this.scene.player.body.y - gamePrefs.heightPunchingThreshold) < 1) {
+        if (this.isVulnerable && Phaser.Math.Distance.Between(0, _enemy.body.y, 0, this.scene.player.body.y - gamePrefs.heightPunchingThreshold) < 3) {
 
             switch (_attackType) {
                 case 'PUNCH':
@@ -139,7 +141,13 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
         if (!this.isAttacking && this.eMoveState == "IN_RANGE" && this.isVulnerable) {
             this.isAttacking = true;
             if (!this.hasWeapon) {
+                if(Phaser.Math.Distance.Between(0, _enemy.body.y, 0, this.scene.player.body.y) < 3)
+                {
+                    this.enemyHitbox.x = this.flipX ? _enemy.x - _enemy.width * 0.2 : _enemy.x + _enemy.width * 0.2;
+                    this.enemyHitbox.y = _enemy.y - _enemy.height * 0.03;
+                }
                 _enemy.anims.play(this.eType + 'run', false);
+                this.scene.physics.world.add(this.enemyHitbox.body); //--> Adds hitbox to the attack when pressing input
                 this.scene.ePunchSound.play();
                 this.flipFlop = !this.flipFlop;
                 if (this.flipFlop) { //right punch
@@ -161,6 +169,7 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
         }
     }
     resetEnemyFrameToIddle(_enemy) {
+        this.enemyHitbox.body.enable = false;
         if (this.eMoveState != "KNOCKED_DOWN" && this.eMoveState != "DEAD") {
             if (!this.hasWeapon)
                 _enemy.setFrame(0);
@@ -194,7 +203,7 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
 
             if ((this.imFighting || !this.scene.isPlayerInAFight)) { // Player is fighting either no one or me
 
-                if (distanceY > 1) { // 1 pixel offset to avoid gittering
+                if (distanceY > 3) { // 1 pixel offset to avoid gittering
                     if (_enemy.body.y < _hero.body.y - gamePrefs.heightPunchingThreshold) {// move towards player
                         _enemy.body.velocity.y = gamePrefs.enemySpeed;
                     }
@@ -237,8 +246,11 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
                     }
                     else {
                         _enemy.body.velocity.x = 0; // here we always are in attacking range
-                        if (distanceY < 1)
+                        if (distanceY < 3)
+                        {
                             this.changeMoveState("IN_RANGE");
+                        }
+                            
                     }
                 }
             }
@@ -261,7 +273,7 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
                     }
                     else{
                         this.body.velocity.x = 0;
-                        if (_enemy.body.y+ 38 < this.scene.weapon.body.y + 16) { // sizes of sprites
+                        if (_enemy.body.y+ _enemy.height < this.scene.weapon.body.y + this.scene.weapon.height) { // sizes of sprites
                             _enemy.body.velocity.y = gamePrefs.enemySpeed;
                         }
                         else {

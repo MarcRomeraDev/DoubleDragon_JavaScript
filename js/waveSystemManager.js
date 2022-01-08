@@ -26,6 +26,7 @@ class waveSystemManager extends Phaser.GameObjects.Sprite {
         _enemy.giveWeapon();
         this.scene.hasWeapon = false;
         this.scene.weapon.line.body.enable = false;
+  
         this.scene.weapon.destroy();
         }
 
@@ -116,13 +117,13 @@ class waveSystemManager extends Phaser.GameObjects.Sprite {
 
             switch (_type) {
                 case 'williams':
-                    _enemy = new enemyWilliams(this.scene, _posX, _posY, _type, this.scene.player, 3, 1);
+                    _enemy = new enemyWilliams(this.scene, _posX, _posY, _type, this.scene.player, 3, 9);
                     break;
                 case 'lindas':
-                    _enemy = new enemyLindas(this.scene, _posX, _posY, _type, this.scene.player, 3, 1);
+                    _enemy = new enemyLindas(this.scene, _posX, _posY, _type, this.scene.player, 3, 9);
                     break;
                 case 'lopars':
-                    _enemy = new enemyLopars(this.scene, _posX, _posY, _type, this.scene.player, 3, 1);
+                    _enemy = new enemyLopars(this.scene, _posX, _posY, _type, this.scene.player, 3, 9);
                     break;
                 default:
                     // _enemy = new enemyWilliams(this, config.width / 3, 304, _type, this.player, 3, 10);
@@ -137,13 +138,13 @@ class waveSystemManager extends Phaser.GameObjects.Sprite {
                 this.enemies.remove(_enemy);
                 switch (_type) {
                     case 'williams':
-                        _enemy = new enemyWilliams(this.scene, _posX, _posY, _type, this.scene.player, 3, 1);
+                        _enemy = new enemyWilliams(this.scene, _posX, _posY, _type, this.scene.player, 3, 9);
                         break;
                     case 'lindas':
-                        _enemy = new enemyLindas(this.scene, _posX, _posY, _type, this.scene.player, 3, 1);
+                        _enemy = new enemyLindas(this.scene, _posX, _posY, _type, this.scene.player, 3, 9);
                         break;
                     case 'lopars':
-                        _enemy = new enemyLopars(this.scene, _posX, _posY, _type, this.scene.player, 3, 1);
+                        _enemy = new enemyLopars(this.scene, _posX, _posY, _type, this.scene.player, 3, 9);
                         break;
                     default:
                         // _enemy = new enemyWilliams(this, config.width / 3, 304, _type, this.player, 3, 10);
