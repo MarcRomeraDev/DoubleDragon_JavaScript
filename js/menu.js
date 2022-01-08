@@ -23,7 +23,10 @@ class menu extends Phaser.Scene {
         this.load.spritesheet('player', 'BillySprites/CharacterSpritesheet.png', { frameWidth: 72, frameHeight: 46 });
         this.load.spritesheet('williams', 'WilliamSprites/williams.png', { frameWidth: 66, frameHeight: 39 });
         this.load.spritesheet('lindas', 'LindaSprites/lindaSpriteSheet.png', { frameWidth: 76, frameHeight: 40 });
+        this.load.spritesheet('lopars', 'LoparSprites/loparSpriteSheet.png', { frameWidth: 66, frameHeight: 55 });
         this.load.image('thumbsUp', 'Props/thumbsUp.png');
+        this.load.image('barrel', 'Props/OilDrum.png');
+        this.load.image('whip', 'Props/WhipPurple.png');
         this.load.image('health', 'HUD/health_bar.png');
         this.load.image('heart', 'HUD/heart.png');
 

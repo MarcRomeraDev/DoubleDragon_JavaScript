@@ -7,6 +7,7 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
         this.scene = _scene;
         this.maxHealth = _health;
         this.dmg = _dmg;
+        this.seekingWeapon = false;
         this.dmgTaken = 0;
         this.direction = 1;
         this.hasWeapon = false;
@@ -173,7 +174,8 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
         this.eMoveState = _newState;
     }
     move(_enemy, _hero) {
-        if (this.eMoveState != "KNOCKED_DOWN" && this.eMoveState != "DEAD" && this.isVulnerable && !this.isAttacking) {
+        if (this.eMoveState != "KNOCKED_DOWN" && this.eMoveState != "DEAD" && this.isVulnerable && !this.isAttacking) 
+        {
 
             var distanceX = Phaser.Math.Distance.Between(_enemy.body.x, 0, _hero.body.x, 0);
             var distanceY = Phaser.Math.Distance.Between(0, _enemy.body.y, 0, _hero.body.y - gamePrefs.heightPunchingThreshold);
@@ -240,52 +242,91 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
             }
             else { // Player is fighting someone else, I must wait
 
+                if (this.seekingWeapon && this.scene.hasWeapon ) {
 
-                if (distanceY < gamePrefs.heightThreshold) { // Get in distance to get in when the chance is given
-                    if (_enemy.body.y > _hero.body.y) {
-                        _enemy.body.velocity.y = gamePrefs.enemySpeed;
-                    }
-                    else {
-                        _enemy.body.velocity.y = -gamePrefs.enemySpeed;
-                    }
-                }
-                else if (distanceY > gamePrefs.heightThreshold * 1.5) { // Stay within threshold distance
-                    if (_enemy.body.y < _hero.body.y) {
-                        _enemy.body.velocity.y = gamePrefs.enemySpeed;
-                    }
-                    else {
-                        _enemy.body.velocity.y = -gamePrefs.enemySpeed;
-                    }
-                }
-                else {
-                    _enemy.body.velocity.y = 0;
-                    if (!this.switchLanes) {
-                        if (distanceX > gamePrefs.attackRange) { // Move towards player
+                     distanceX = Phaser.Math.Distance.Between(_enemy.body.x, 0, this.scene.weapon.body.x, 0);
 
-                            if (_enemy.body.x < _hero.body.x) {
-                                _enemy.body.velocity.x = gamePrefs.enemySpeed;
-                            }
-                            else {
-                                _enemy.body.velocity.x = -gamePrefs.enemySpeed;
-                            }
-                        }
-                        else if (distanceX < gamePrefs.attackRange - gamePrefs.evadeThreshold) { // too close from player
-                            if (_enemy.body.x > _hero.body.x) { // evade
-                                _enemy.body.velocity.x = gamePrefs.enemySpeed;
-                            }
-                            else {
-                                _enemy.body.velocity.x = -gamePrefs.enemySpeed;
-                            }
+                    
+
+                    if (distanceX > 1) { // Move towards player
+
+                        if (_enemy.body.x < this.scene.weapon.body.x) {
+                            _enemy.body.velocity.x = gamePrefs.enemySpeed;
                         }
                         else {
-                            _enemy.body.velocity.x = 0; // here I wait for my chance
-                            this.changeMoveState("WAITING");
-                            if (!this.hasWeapon)
-                                _enemy.anims.play(this.eType + 'run', false);
-                            else
-                                _enemy.anims.play(this.eType + 'runweapon', false);
+                            _enemy.body.velocity.x = -gamePrefs.enemySpeed;
+                        }
+                    }
+                    else{
+                        this.body.velocity.x = 0;
+                        if (_enemy.body.y+ 38 < this.scene.weapon.body.y + 16) { // sizes of sprites
+                            _enemy.body.velocity.y = gamePrefs.enemySpeed;
+                        }
+                        else {
+                            _enemy.body.velocity.y = -gamePrefs.enemySpeed;
+                        }
+                    }
+                }
+                else{
+                    if (distanceY < gamePrefs.heightThreshold) { // Get in distance to get in when the chance is given
+                        if (_enemy.body.y > _hero.body.y && _hero.body.y < this.scene.minY - 20) {
+                            _enemy.body.velocity.y = gamePrefs.enemySpeed;
+                        }
+                        else {
+                            if (_hero.body.y > this.scene.maxY + 20)
+                                _enemy.body.velocity.y = -gamePrefs.enemySpeed;
+                            else {
+                                _enemy.body.velocity.y = gamePrefs.enemySpeed;
+                            }
+                        }
 
-                            //this.resetEnemyFrameToIddle(_enemy);
+                    }
+                    else if (distanceY > gamePrefs.heightThreshold * 1.5) { // Stay within threshold distance
+                        if (_enemy.body.y < _hero.body.y) {
+                            _enemy.body.velocity.y = gamePrefs.enemySpeed;
+                        }
+                        else {
+                            _enemy.body.velocity.y = -gamePrefs.enemySpeed;
+                        }
+                    }
+                    else {
+                        _enemy.body.velocity.y = 0;
+                        if (!this.switchLanes) {
+                            if (distanceX > gamePrefs.attackRange * 3) { // Move towards player
+
+                                if (_enemy.body.x < _hero.body.x) {
+                                    _enemy.body.velocity.x = gamePrefs.enemySpeed;
+                                }
+                                else {
+                                    _enemy.body.velocity.x = -gamePrefs.enemySpeed;
+                                }
+                            }
+                            else if (distanceX < gamePrefs.attackRange * 2) { // too close from player
+                                if (_enemy.body.x > _hero.body.x) { // evade
+                                    _enemy.body.velocity.x = gamePrefs.enemySpeed;
+                                }
+                                else {
+                                    _enemy.body.velocity.x = -gamePrefs.enemySpeed;
+                                }
+                            }
+                            else {
+                                _enemy.body.velocity.x = 0; // here I wait for my chance
+                                this.changeMoveState("WAITING");
+                                if (!this.hasWeapon)
+                                    _enemy.anims.play(this.eType + 'run', false);
+                                else
+                                    _enemy.anims.play(this.eType + 'runweapon', false);
+
+                                //this.resetEnemyFrameToIddle(_enemy);
+                            }
+                        }
+                        else if (distanceX > gamePrefs.forceApproachDistance) {
+                            if (_enemy.body.x < _hero.body.x) {// move towards player
+                                _enemy.body.velocity.x = gamePrefs.enemySpeed;
+                            }
+                            else {
+                                _enemy.body.velocity.x = -gamePrefs.enemySpeed;
+                            }
                         }
                     }
                 }
@@ -321,6 +362,20 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
             this.isScenearyMoving = false;
         }
 
+        if (_enemy.body.y < this.scene.maxY - 5 && _enemy.body.velocity.y < 0) {
+
+            _enemy.body.velocity.y = 0;
+        }
+        if (_enemy.body.y > this.scene.minY + 5 && _enemy.body.velocity.y > 0) {
+
+            _enemy.body.velocity.y = 0;
+        }
+        if ((_enemy.body.x < 20 && _enemy.body.velocity.x < 0) || (_enemy.body.x > config.width - 20 && _enemy.body.velocity.x > 0)) {
+            _enemy.body.velocity.x = 0;
+            if (this.imFighting) {
+                this.changeMoveState("IN_RANGE");
+            }
+        }
 
     }
     resetSwitchLanes() {
@@ -345,6 +400,9 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
     {
         this.imFighting = _boolean;
         this.scene.isPlayerInAFight = _boolean;
+        if(this.eType != 'williams')
+            this.seekingWeapon = !_boolean;
+
     }
 
 

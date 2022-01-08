@@ -1,4 +1,4 @@
-class enemyLindas extends enemyPrefab {
+class enemyLopars extends enemyPrefab {
     constructor(_scene, _posX, _posY, _tag, character, dmg, health) {
         super(_scene, _posX, _posY, _tag, dmg, health);
 
@@ -50,14 +50,15 @@ class enemyLindas extends enemyPrefab {
     }
     flipHitBox() {
         if (this.flipX) {
-            this.body.setOffset(33, 0);
+            this.body.setOffset(25, 15);
         } else {
-            this.body.setOffset(27, 0);
+            this.body.setOffset(23, 15);
         }
 
     }
     giveWeapon() {
-        this.setFrame(5);
+        this.anims.play(this.eType + 'runweapon', true);
+        this.setFrame(14);
         super.setVulnerable(false);
         this.body.velocity.x = 0;
         this.body.velocity.y = 0;
@@ -68,7 +69,8 @@ class enemyLindas extends enemyPrefab {
 
     }
     dropWeapon() {
-        this.scene.createWeapon(this.body.x,this.body.y,'whip',0,-100,this.body.y+39);
+  
+        this.scene.createWeapon(this.body.x,this.body.y,'barrel',90*this.direction,10*this.direction,this.body.y+39);
         super.dropWeapon();
     }
     resetEnemy() {
@@ -77,8 +79,9 @@ class enemyLindas extends enemyPrefab {
     attackWithWeapon() {
         this.scene.ePunchSound.play();
         this.anims.play(this.eType + 'attackweapon', true);
-        super.enemyPunchTimer = this.scene.time.delayedCall(gamePrefs.whipDuration, super.resetEnemyFrameToIddle, [this], this);
-        super.attackingTimer = this.scene.time.delayedCall(gamePrefs.lindaWeaponAttackRate, super.setIsAttacking, [false], this);
+        this.dropWeapon();
+        super.enemyPunchTimer = this.scene.time.delayedCall(gamePrefs.loparthrowingRecoverTime, super.resetEnemyFrameToIddle, [this], this);
+        super.attackingTimer = this.scene.time.delayedCall(gamePrefs.loparthrowingRecoverTime, super.setIsAttacking, [false], this);
     }
 
 
