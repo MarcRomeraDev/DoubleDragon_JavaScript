@@ -60,20 +60,22 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
                     this.dmgTaken = 1;
                     this.scene.updateExp(20); //-->UPDATE PLAYER EXP
                     this.scene.updateScore(50); //--> UPDATE PLAYER SCORE AND HIGH SCORE
+                    this.scene.punchSound.play();
                     break;
                 case 'HEADBUTT':
                     this.dmgTaken = 2;
                     this.scene.updateExp(12); //-->UPDATE PLAYER EXP
                     this.scene.updateScore(700); //--> UPDATE PLAYER SCORE AND HIGH SCORE
+                    this.scene.punchSound.play();
                     break;
                 case 'KICK':
                     this.dmgTaken = 2;
                     this.scene.updateExp(15); //-->UPDATE PLAYER EXP
                     this.scene.updateScore(70); //--> UPDATE PLAYER SCORE AND HIGH SCORE
+                    this.scene.kickSound.play();
                     break;
                 default:
                     break;
-
             }
 
             if (!this.hasWeapon)

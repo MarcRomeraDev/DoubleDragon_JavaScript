@@ -123,10 +123,10 @@ class level2 extends Phaser.Scene {
     }
 
     updateConveyorBelt() {
-        if (this.player.body.y < config.height / 2 + 5 && this.player.body.y > config.height / 2 - 12 && this.player.body.x < config.width - 60) {
+        if (this.player.body.y < config.height / 2 + 5 && this.player.body.y > config.height / 2 - 12 && this.player.body.x < config.width - 75) {
             this.player.body.velocity.x += 30;
         }
-        if (this.player.body.x > config.width - 60 && this.player.body.y > config.height / 2 - 12 && !this.player.isDead) {
+        if (this.player.body.x > config.width - 75 && this.player.body.y > config.height / 2 - 12 && !this.player.isDead) {
             this.makePlayerFall();
         }
     }
@@ -160,13 +160,13 @@ class level2 extends Phaser.Scene {
     }
 
     makePlayerFall() {
+        this.player.anims.stop();
+        this.player.setFrame(19);
         this.player.canMove = false;
         this.player.isDead = true;
         this.player.body.gravity.y = 300;
         this.player.body.collideWorldBounds = false; //--> Collision with world border walls
         this.deathTimer = this.time.delayedCall(2000, function () { this.player.health = 0; this.checkPlayerHealth(); }, [], this);
-        this.player.anims.stop();
-        this.player.setFrame(19);
     }
 
     // makeEnemiesFall() {
