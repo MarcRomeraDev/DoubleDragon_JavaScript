@@ -109,8 +109,8 @@ class gameState extends Phaser.Scene {
 
         //INPUT TO TEST RECIEVE DAMAGE
         if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.h)) {
-           //this.dmgPlayer();
-           this.changeScene();
+            //this.dmgPlayer();
+            this.changeScene();
         }
 
         //INPUT TO TEST HEALING
@@ -121,44 +121,46 @@ class gameState extends Phaser.Scene {
             }
         }
     }
-    dmgPlayer(hit, asd) {
-        if (this.playerVulnerable) {
-            if (this.player.canMove) {
-                this.player.canMove = false;
+    dmgPlayer(hit) {
+        if (this.player.canMove) {
+            this.player.canMove = false;
+            this.player.stop();
 
-                //KNOCK DOWN TAKE DAMAGE ANIMATION
-                if (hit.knockDownPlayer) {
-                    this.player.isInFloor = true;
-                    this.fallingAnimation = this.player.play('fall', true);
-                    this.fallingAnimation.on('animationcomplete', function () {
+            //KNOCK DOWN TAKE DAMAGE ANIMATION
+            if (hit.knockDownPlayer) {
+                this.player.isInFloor = true;
+                this.fallingAnimation = this.player.play('fall', true);
+                this.fallingAnimation.on('animationcomplete', function () {
+                    console.log(this.player.canMove);
+                    this.getUpAnimation = this.player.play('getUp', true);
+                    this.fallingAnimation.off('animationcomplete');
+                    this.getUpAnimation.on('animationcomplete', function () {
                         console.log(this.player.canMove);
-                        this.getUpAnimation = this.player.play('getUp', true);
-                        this.fallingAnimation.off('animationcomplete');
-                        this.getUpAnimation.on('animationcomplete', function () {
-                            console.log(this.player.canMove);
-                            this.player.isInFloor = false;
-                            this.player.canMove = true;
-                            this.getUpAnimation.off('animationcomplete');
-                        }, this);
+                        this.player.isInFloor = false;
+                        this.player.canMove = true;
+                        this.getUpAnimation.off('animationcomplete');
                     }, this);
-                }
-                else {
-                    //NORMAL HIT TAKE DAMAGE ANIMATION
-                    this.randAnim = this.rnd.integerInRange(1, 3);
-                    console.log(this.randAnim);
-                    this.recieveDmgAnimation = this.player.play('recieveDamage' + this.randAnim, true);
-                    this.recieveDmgAnimation.on('animationcomplete', function () {
-                        this.player.move = true; this.recieveDmgAnimation.off('animationcomplete');
-                    }, this);
-                }
+                }, this);
+            }
+            else {
+                //NORMAL HIT TAKE DAMAGE ANIMATION
+                this.randAnim = Phaser.Math.Between(1, 3);
+                console.log(this.randAnim);
+                this.recieveDmgAnimation = this.player.play('recieveDamage' + this.randAnim, true);
+                this.recieveDmgAnimation.on('animationcomplete', function () {
+                    console.log(this.player.canMove);
+                    this.player.canMove = true;
+                    this.recieveDmgAnimation.off('animationcomplete');
+                }, this);
             }
 
-            this.playerVulnerable = false;
-            this.vulnerabilityTimer = this.time.delayedCall(gamePrefs.knockDownTimer, function () { this.playerVulnerable = true }, [], this);
-
-            this.health[this.player.health - 1].visible = false;
-            this.player.health--;
-            this.checkPlayerHealth();
+            if (this.playerVulnerable) {
+                this.vulnerabilityTimer = this.time.delayedCall(gamePrefs.knockDownTimer, function () { this.playerVulnerable = true }, [], this);
+                this.playerVulnerable = false;
+                this.health[this.player.health - 1].visible = false;
+                this.player.health--;
+                this.checkPlayerHealth();
+            }
         }
     }
 

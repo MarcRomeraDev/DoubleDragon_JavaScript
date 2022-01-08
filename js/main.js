@@ -2,11 +2,12 @@ var gamePrefs =
 {
     playerSpeed: 60,
     enemySpeed: 35,
-    attackRange: 26,
+    attackRange: 20,
     heightThreshold: 20,
     forceApproachDistance: 60,
     evadeThreshold: 2,
     attackRate: 310,
+    enemyAttackRate: 500,
     punchDuration: 155,
     punchCollisionDuration: 35,
     vulnerableTimer: 300,

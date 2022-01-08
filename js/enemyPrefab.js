@@ -158,7 +158,7 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
                 }
 
                 this.enemyPunchTimer = this.scene.time.delayedCall(gamePrefs.punchDuration, this.resetEnemyFrameToIddle, [_enemy], this);
-                this.attackingTimer = this.scene.time.delayedCall(gamePrefs.attackRate, this.setIsAttacking, [false], this);
+                this.attackingTimer = this.scene.time.delayedCall(gamePrefs.enemyAttackRate, this.setIsAttacking, [false], this);
             }
             else {
                 _enemy.anims.play(this.eType + 'runweapon', false);

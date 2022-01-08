@@ -24,7 +24,7 @@ class character extends Phaser.GameObjects.Sprite {
     this.attackHitbox.body.enable = false;
 
     this.attackHitbox.type = "";
-
+    
     //#region PLAYER DATA
     this.isDead = false;
     this.level = 1;
@@ -81,7 +81,7 @@ class character extends Phaser.GameObjects.Sprite {
 
   //#region ATTACK
   attackManager() {
-    if (!this.isInFloor) {
+    if (!this.isInFloor && this.canMove) {
       if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.s)) {
         this.kickAttack();
       }
@@ -107,7 +107,6 @@ class character extends Phaser.GameObjects.Sprite {
         }
         this.headbuttAnimation.off('animationupdate'); //STOPS LISTENER IF ANIMATION IS IN FRAME 3
         this.scene.physics.world.add(this.attackHitbox.body); //--> ADDS HITBOX WHEN THE ANIMATIONS IS IN ITS THIRD FRAME
-        //this.scene.punchSound.play();
       });
 
       this.headbuttAnimation.on('animationcomplete', function () { this.isAttacking = false; this.attackHitbox.body.enable = false; }, this);
@@ -130,7 +129,6 @@ class character extends Phaser.GameObjects.Sprite {
         }
         this.kickAnimation.off('animationupdate'); //STOPS LISTENER IF ANIMATION IS IN FRAME 3
         this.scene.physics.world.add(this.attackHitbox.body); //--> ADDS HITBOX WHEN THE ANIMATIONS IS IN ITS THIRD FRAME
-        // this.scene.kickSound.play();
       });
 
       this.kickAnimation.on('animationcomplete', function () { this.isAttacking = false; this.attackHitbox.body.enable = false; }, false);
@@ -149,7 +147,6 @@ class character extends Phaser.GameObjects.Sprite {
       this.attackFlipFlop = !this.attackFlipFlop;
       this.punchTimer = this.scene.time.delayedCall(gamePrefs.punchDuration, function () { this.setFrame(1); }, [], this);
       this.stop();
-      //this.scene.punchSound.play();
       this.isAttacking = true;
 
       //Sets hitbox position infront of player and facing same way as player
