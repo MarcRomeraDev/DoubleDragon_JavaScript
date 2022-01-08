@@ -131,11 +131,9 @@ class gameState extends Phaser.Scene {
                 this.player.isInFloor = true;
                 this.fallingAnimation = this.player.play('fall', true);
                 this.fallingAnimation.on('animationcomplete', function () {
-                    console.log(this.player.canMove);
                     this.getUpAnimation = this.player.play('getUp', true);
                     this.fallingAnimation.off('animationcomplete');
                     this.getUpAnimation.on('animationcomplete', function () {
-                        console.log(this.player.canMove);
                         this.player.isInFloor = false;
                         this.player.canMove = true;
                         this.getUpAnimation.off('animationcomplete');
@@ -145,10 +143,8 @@ class gameState extends Phaser.Scene {
             else {
                 //NORMAL HIT TAKE DAMAGE ANIMATION
                 this.randAnim = Phaser.Math.Between(1, 3);
-                console.log(this.randAnim);
                 this.recieveDmgAnimation = this.player.play('recieveDamage' + this.randAnim, true);
                 this.recieveDmgAnimation.on('animationcomplete', function () {
-                    console.log(this.player.canMove);
                     this.player.canMove = true;
                     this.recieveDmgAnimation.off('animationcomplete');
                 }, this);
