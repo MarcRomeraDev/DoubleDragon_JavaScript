@@ -128,11 +128,29 @@ class gameState extends Phaser.Scene {
             if (this.player.kickAnimation != null) this.player.kickAnimation.off('animationupdate'); //STOPS LISTENER IF ANIMATION IS IN FRAME 3
 
             this.player.canMove = false;
+            var direction = 1;
+
+            if (hit.x > this.player.body.x) {
+                if (this.player.flipX) this.player.flipX = false;
+                direction = -1;
+            }
+            else {
+                if (!this.player.flipX) this.player.flipX = true;
+            }
 
             //KNOCK DOWN TAKE DAMAGE ANIMATION
             if (hit.knockDownPlayer) {
                 this.player.isInFloor = true;
+                this.player.body.velocity.x = 60 * direction;
                 this.fallingAnimation = this.player.play('fall', true);
+
+                this.fallingAnimation.on('animationupdate', function () {
+                    if (this.fallingAnimation.anims.currentFrame.index < 3) {
+                        return;
+                    }
+                    this.fallingAnimation.off('animationupdate'); //STOPS LISTENER IF ANIMATION IS IN FRAME 3
+                    this.player.body.setVelocity(0);
+                }, this);
 
                 this.fallingAnimation.on('animationcomplete', function () {
                     this.getUpAnimation = this.player.play('getUp', true);
@@ -224,7 +242,7 @@ class gameState extends Phaser.Scene {
 
         this.anims.create({
             key: 'fall',
-            frames: this.anims.generateFrameNumbers('player', { frames: [18, 17, 17] }),
+            frames: this.anims.generateFrameNumbers('player', { frames: [18, 18, 17, 17] }),
             frameRate: 5
         });
 

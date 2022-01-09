@@ -101,7 +101,7 @@ class character extends Phaser.GameObjects.Sprite {
     if (!this.isAttacking) {
       this.isAttacking = true;
       this.headbuttAnimation = this.play('headbutt');
-      this.body.setVelocity(0, 0);
+      this.body.setVelocity(0);
       this.attackHitbox.x = this.flipX ? this.x - this.width * 0.2 : this.x + this.width * 0.2;
       this.attackHitbox.y = this.y - this.height * 0.1;
       this.attackHitbox.type = 'HEADBUTT';
@@ -121,7 +121,7 @@ class character extends Phaser.GameObjects.Sprite {
   kickAttack() {
     this.isAttacking = true;
     this.kickAnimation = this.play('kick');
-    this.body.setVelocity(0, 0);
+    this.body.setVelocity(0);
     this.attackHitbox.x = this.flipX ? this.x - this.width * 0.2 : this.x + this.width * 0.2;
     this.attackHitbox.y = this.y + this.height * 0.1;
 
@@ -145,7 +145,7 @@ class character extends Phaser.GameObjects.Sprite {
     else {
       this.setFrame(5);
     }
-    this.body.setVelocity(0, 0);
+    this.body.setVelocity(0);
     this.attackFlipFlop = !this.attackFlipFlop;
     this.punchTimer = this.scene.time.delayedCall(gamePrefs.punchDuration, function () { this.setFrame(1); }, [], this);
     this.stop();
@@ -168,8 +168,9 @@ class character extends Phaser.GameObjects.Sprite {
 
   //#region  MOVE
   movementManager() {
+    if (!this.isInFloor) this.body.setVelocity(0);
+    
     if (!this.isAttacking && this.canMove) {
-      this.body.setVelocity(0, 0);
       if (this.cursorKeys.down.isDown) { // down
         if (this.body.y < this.scene.minY) {
           this.body.setVelocityY(gamePrefs.playerSpeed);
