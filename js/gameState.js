@@ -123,17 +123,21 @@ class gameState extends Phaser.Scene {
     }
     dmgPlayer(hit) {
         if (this.player.canMove) {
+            //PREVENTS FROM PLAYER'S ATTACK HITBOX GENERATING AFTER GETTING HIT GLITCH
+            if (this.player.headbuttAnimation != null) this.player.headbuttAnimation.off('animationupdate'); //STOPS LISTENER IF ANIMATION IS IN FRAME 3
+            if (this.player.kickAnimation != null) this.player.kickAnimation.off('animationupdate'); //STOPS LISTENER IF ANIMATION IS IN FRAME 3
+
             this.player.canMove = false;
-            this.player.stop();
-            this.player.attackHitbox.body.enable = false;
 
             //KNOCK DOWN TAKE DAMAGE ANIMATION
             if (hit.knockDownPlayer) {
                 this.player.isInFloor = true;
                 this.fallingAnimation = this.player.play('fall', true);
+
                 this.fallingAnimation.on('animationcomplete', function () {
                     this.getUpAnimation = this.player.play('getUp', true);
                     this.fallingAnimation.off('animationcomplete');
+
                     this.getUpAnimation.on('animationcomplete', function () {
                         this.player.isInFloor = false;
                         this.player.canMove = true;
@@ -143,8 +147,7 @@ class gameState extends Phaser.Scene {
             }
             else {
                 //NORMAL HIT TAKE DAMAGE ANIMATION
-                this.randAnim = Phaser.Math.Between(1, 3);
-                this.recieveDmgAnimation = this.player.play('recieveDamage' + this.randAnim, true);
+                this.recieveDmgAnimation = this.player.play('recieveDamage' + Phaser.Math.Between(1, 3), true);
                 this.recieveDmgAnimation.on('animationcomplete', function () {
                     this.player.canMove = true;
                     this.recieveDmgAnimation.off('animationcomplete');
