@@ -74,12 +74,13 @@ class gameState extends Phaser.Scene {
         this.canAdvance = false;
         this.createPlayerAnims();
         this.createWilliamsAnims();
+        this.createAbobosAnims();
         this.createLindasAnims();
         this.createLoparAnims();
         this.playerVulnerable = true;
 
 
-        this.waveSystem = new waveSystemManager(this);
+        this.waveSystem = new waveSystemManager(this,1);
 
         /*this.barrel  = this.add.sprite(config.width - 40, config.height / 2, 'barrel');
         this.whip  = this.add.sprite(config.width - 40, config.height / 2, 'whip');
@@ -294,6 +295,43 @@ class gameState extends Phaser.Scene {
             repeat: 0
         });
     }
+    createAbobosAnims() {
+        this.anims.create({
+            key: 'abobosrun',
+            frames: this.anims.generateFrameNumbers('abobos', { start: 0, end: 2 }),
+            frameRate: 5,
+            yoyo: true,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'abobostakeDmg',
+            frames: this.anims.generateFrameNumbers('abobos', { start: 5, end: 7 }),
+            frameRate: 5,
+            yoyo: true,
+            repeat: 0
+        });
+        this.anims.create({
+            key: 'abobosdie',
+            frames: this.anims.generateFrameNumbers('abobos', { start: 8, end: 9 }),
+            frameRate: 5,
+            yoyo: false,
+            repeat: 0
+        });
+        this.anims.create({
+            key: 'abobosBigAttack',
+            frames: this.anims.generateFrameNumbers('abobos', { frames: [11,11,12]}),
+            frameRate: 5,
+            yoyo: false,
+            repeat: 0
+        });
+        this.anims.create({
+            key: 'abobosKick',
+            frames: this.anims.generateFrameNumbers('abobos', { frames: [13,13,13] }),
+            frameRate: 5,
+            yoyo: false,
+            repeat: 0
+        });
+    }
     createLindasAnims() {
         this.anims.create({
             key: 'lindasrun',
@@ -311,7 +349,7 @@ class gameState extends Phaser.Scene {
         });
         this.anims.create({
             key: 'lindasattackweapon',
-            frames: this.anims.generateFrameNumbers('lindas', { start: 5, end: 7 }),
+            frames: this.anims.generateFrameNumbers('lindas', { frames: [5,6,7,7] }),
             frameRate: 5,
             repeat: 0
         });
