@@ -1,77 +1,97 @@
-class menu extends Phaser.Scene
-{
-    
-    constructor()
-    {
-        super({key: "menu"});
+class menu extends Phaser.Scene {
+
+    constructor() {
+        super({ key: "menu" });
     }
-    
-    preload()
-    {
-        this.load.setPath('assets/img/');
-        this.load.image('background1','background_back.png');
-        this.load.image('background2','background_frontal.png');
-        this.load.spritesheet('nave','naveAnim.png',{frameWidth:16,frameHeight:24});
-        this.load.image('btn_play','btn.png');
+
+    //LOAD ASSETS FOR WHOLE GAME SO THERE ARE NO LOADING SCREENS BETWEEN SCENES
+    //WE ONLY LOAD FROM CACHE IN THE CREATE FUNCTION OF EACH SCENE
+    preload() {
+        //FONTS
+        this.load.css('fonts', 'css/font.css');
+
+        //#region SPRITES
+        this.load.setPath("assets/sprites/");
+
+        //MENU
+        this.load.image('titleScreen1', 'TitleScreenSprites/2.png');
+        this.load.image('titleScreen2', 'TitleScreenSprites/1.png');
+        this.load.image('mission1bg', 'Mission1BackgroundSprites/0.png');
+
+        //LEVEL 1
+        this.load.image('background1', 'Mission1BackgroundSprites/1.png');
+        this.load.spritesheet('player', 'BillySprites/CharacterSpritesheet.png', { frameWidth: 72, frameHeight: 46 });
+        this.load.spritesheet('williams', 'WilliamSprites/williams.png', { frameWidth: 66, frameHeight: 39 });
+        this.load.spritesheet('lindas', 'LindaSprites/lindaSpriteSheet.png', { frameWidth: 76, frameHeight: 40 });
+        this.load.spritesheet('lopars', 'LoparSprites/loparSpriteSheet.png', { frameWidth: 66, frameHeight: 55 });
+        this.load.spritesheet('abobos', 'AboboSprites/abobosSpriteSheet.png', { frameWidth: 84, frameHeight: 48 });
+        this.load.image('thumbsUp', 'Props/thumbsUp.png');
+        this.load.image('barrel', 'Props/OilDrum.png');
+        this.load.image('whip', 'Props/WhipPurple.png');
+        this.load.image('health', 'HUD/health_bar.png');
+        this.load.image('heart', 'HUD/heart.png');
+
+        //LEVEL 2
+        this.load.image('background2.1', 'Mission1BackgroundSprites/2.png');
+        this.load.image('background2.2', 'Mission1BackgroundSprites/3.png');
+        this.load.image('background2.3', 'Mission1BackgroundSprites/4.png');
+        //#endregion
+
+        //AUDIO
+        this.load.setPath("assets/sounds/");
+        this.load.audio('bgMusic', 'music/mission1.mp3');
+        this.load.audio('punch', 'effects/punch.ogg');
+        this.load.audio('kick', 'effects/kick.ogg');
+        this.load.audio('gameOver', 'music/game_over.mp3');
+        this.load.audio('victoryMusic', 'music/mission_clear.mp3');
+        this.load.audio('thumbsUpEffect', 'effects/thumbs_up.ogg');
+        this.load.audio('levelUp', 'effects/level_up.ogg');
+
+        //AUDIO
+        this.load.setPath("assets/sounds/");
+        this.load.audio('menuMusic', 'music/menu.mp3');
+        this.load.audio('mission1TitleScreen', 'music/mission1_start.mp3');
     }
-    
-    create()
-    {
-        this.bg1=this.add.tileSprite(0,0,128,256,'background1').setOrigin(0);
-        this.bg2=this.add.tileSprite(0,0,128,256,'background2').setOrigin(0);
-        
-        this.nave = this.add.sprite(config.width/2,config.height/2,'nave');
-        //destino y=235
-        this.anims.create(
-        {
-            key:'idle',
-            frames:this.anims.generateFrameNumbers('nave',{start:0,end:1}),
-            frameRate:10,
-            repeat:-1
+
+    create() {
+        this.menuMusic = this.sound.add('menuMusic', { volume: .1, loop: true });
+        this.mission1TitleScreenMusic = this.sound.add('mission1TitleScreen', { volume: .1 });
+        this.menuMusic.play();
+        this.doOnce = false;
+        this.keyboardKeys = this.input.keyboard.addKeys({
+            a: Phaser.Input.Keyboard.KeyCodes.A
         });
-        this.nave.anims.play('idle');
-        
-        this.titulo = this.add.text(config.width / 2, config.height / 2 -100, 'Shooter 2D', 
-        {fontFamily: 'Arial Black', 
-         fill: '#43d637',
-         stroke: '#FFFFFF',
-         strokeThickness: 4
-        })
-        .setOrigin(0.5);
-        
-        this.boton = this.add.image (config.width/2,config.height/2+75,'btn_play')
-        .setScale(.25)
-        .setInteractive({useHandCursor: true}).on('pointerdown',this.iniciaJuego,this);
-        
+
+        this.createBackgroundAnim();
     }
-    
-    iniciaJuego()
-    {
-        
-        console.log('gogogogo');
-        this.boton.destroy();
-        this.add.tween({
-            targets:this.titulo,
-            duration:2000,
-            alpha:0
-        });
-        this.add.tween({
-            targets:this.nave,
-            duration:2500,
-            y:235,
-            onComplete:this.cambiaEscena,
-            onCompleteScope:this
-        }); 
-    }
-    
-    cambiaEscena()
-    {
+
+    changeScene() {
         this.scene.start('gameState');
     }
-    
-    update()
-    {
-        this.bg1.tilePositionY-=.25;
-        this.bg2.tilePositionY-=1; 
+
+    createBackgroundAnim() {
+        this.anims.create({
+            key: 'menu_background_change',
+            frames: [
+                { key: 'titleScreen1' },
+                { key: 'titleScreen2' }
+            ],
+            frameRate: 2,
+            repeat: -1
+        });
+
+        this.backgroundAnim = this.add.sprite(248, config.height, 'titleScreen1').setOrigin(1).play('menu_background_change');
+    }
+
+    update() {
+        //INPUT TO CHANGE SCENE--> A
+        if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.a) && !this.doOnce) {
+            this.backgroundAnim.stop();
+            this.doOnce = true;
+            this.backgroundAnim.setTexture('mission1bg');
+            this.menuMusic.stop();
+            this.mission1TitleScreenMusic.on('complete', this.changeScene, this);
+            this.mission1TitleScreenMusic.play();
+        }
     }
 }

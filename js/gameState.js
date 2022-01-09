@@ -1,386 +1,470 @@
-class gameState extends Phaser.Scene
-{
-    constructor()
-    { //crea la escena
+class gameState extends Phaser.Scene {
+    constructor() { //crea la escena
         super(
-        {
-            key:"gameState"
+            {
+                key: "gameState"
+            });
+    }
+
+
+    create() { //carga los assets en pantalla desde memoria
+        this.gameTime = 200;
+        this.thumbsUpTimer;
+        this.maxY = config.height / 2 + 5;
+        this.minY = 2 / 3 * config.height + 5;
+        this.beltForce = -5;
+
+        this.gameTimer = this.time.addEvent({
+            delay: 1000, callback: function () {
+                this.gameTime--;
+                this.timeText.setText('TIME ' + this.gameTime);
+                if (this.gameTime < 0) {
+                    this.player.health = 0;
+                    this.checkPlayerHealth();
+                }
+            },
+            callbackScope: this,
+            loop: true
+        });
+
+        //STORES EVERY INPUT KEY WE NEED IN THE SCENE
+        this.keyboardKeys = this.input.keyboard.addKeys({
+            h: Phaser.Input.Keyboard.KeyCodes.H,
+            q: Phaser.Input.Keyboard.KeyCodes.Q
+        });
+
+        this.bg1 = this.add.tileSprite(0, 0, 1015, 192, 'background1').setOrigin(0);
+        this.music = this.sound.add('bgMusic', { volume: .1, loop: true });
+        this.punchSound = this.sound.add('punch', { volume: .3 });
+        this.ePunchSound = this.sound.add('punch', { volume: .3 });
+        this.kickSound = this.sound.add('kick', { volume: .3 });
+        this.levelUpSound = this.sound.add('levelUp', { volume: .3 });
+        this.thumbsUpSound = this.sound.add('thumbsUpEffect', { volume: .3 });
+        this.gameOverMusic = this.sound.add('gameOver', { volume: .1, loop: false });
+        this.music.play();
+
+        this.player = new character(this, config.width / 2, config.height * .7, 'player');
+        this.loadPlayerData();
+
+        this.thumbsUpImage = this.add.sprite(config.width - 40, config.height / 2, 'thumbsUp');
+        this.changeThumbsUp = true;
+        this.thumbsUpImage.visible = false;
+
+        this.isPlayerInAFight = false;
+
+        //Stores the sprites of the player's health
+        this.health = [];
+        for (var i = 0; i < 14; i++) {
+            this.health[i] = this.add.sprite(34 + 4 * i, config.height - 25, 'health').setOrigin(0).setDisplaySize(3, 7);
+        }
+        this.player.health = this.health.length;
+
+        //Stores the sprites of the player's hearts (levels)
+        this.hearts = [];
+        for (var i = 0; i < 7; i++) {
+            this.hearts[i] = this.add.sprite(32 + 9 * i, config.height - 15, 'heart').setOrigin(0).setDisplaySize(10, 8);
+            if (i > 0) {
+                this.hearts[i].visible = false;
+            }
+        }
+
+        this.flipFlop = false;
+        this.numMapSubdivisions = 1015 / config.width;
+        this.count = this.numMapSubdivisions / 4;
+        this.canAdvance = false;
+        this.createPlayerAnims();
+        this.createWilliamsAnims();
+        this.createAbobosAnims();
+        this.createLindasAnims();
+        this.createLoparAnims();
+        this.playerVulnerable = true;
+
+
+        this.waveSystem = new waveSystemManager(this, 1);
+        this.weapon;
+        this.hasWeapon = false;
+        this.physics.add.overlap(this.player.attackHitbox, this.waveSystem.enemies, this.waveSystem.dmgEnemy, null, this.waveSystem);
+
+        this.playerText = this.add.text(20, config.height - 20, '1P', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //player
+        this.expText = this.add.text(20, config.height - 12, this.player.exp, { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //exp
+        this.timeText = this.add.text(config.width / 2 + 10, config.height - 12, 'TIME ' + this.gameTime, { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //game time
+        this.scoreText = this.add.text(config.width - 60, config.height - 12, '1P ', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //score text
+        this.scoreNumbersText = this.add.text(config.width - 25, config.height - 12, '00', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //score num
+        this.highScoreText = this.add.text(config.width - 60, config.height - 20, 'HI ', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //highscore text
+        this.highScoreNumbersText = this.add.text(config.width - 25, config.height - 20, this.player.highScore, { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //highscore num
+        this.lifesText = this.add.text(config.width / 2 + 14, config.height - 20, 'P-2', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //game time       
+
+        this.doorTrigger = this.add.rectangle(config.width / 2 + 40, config.height / 2 + 2, 40, 10, 0xffffff, 0);
+
+        this.physics.add.overlap(this.player, this.doorTrigger, this.changeScene, null, this);
+    }
+
+    update() {
+        this.player.updatePlayer();
+        this.updateLevel();
+
+        //INPUT TO TEST RECIEVE DAMAGE
+        if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.h)) {
+            this.changeScene();
+        }
+
+        //INPUT TO TEST HEALING
+        if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.q)) {
+            if (this.player.health < 14) {
+                this.player.health++;
+                this.health[this.player.health - 1].visible = true;
+            }
+        }
+    }
+    dmgPlayer(hit) {
+        if (this.player.canMove) {
+            //PREVENTS FROM PLAYER'S ATTACK HITBOX GENERATING AFTER GETTING HIT GLITCH
+            if (this.player.headbuttAnimation != null) this.player.headbuttAnimation.off('animationupdate'); //STOPS LISTENER IF ANIMATION IS IN FRAME 3
+            if (this.player.kickAnimation != null) this.player.kickAnimation.off('animationupdate'); //STOPS LISTENER IF ANIMATION IS IN FRAME 3
+
+            this.player.canMove = false;
+
+            //KNOCK DOWN TAKE DAMAGE ANIMATION
+            if (hit.knockDownPlayer) {
+                var direction = 1;
+
+                if (hit.x > this.player.body.x) {
+                    if (this.player.flipX) this.player.flipX = false;
+                    direction = -1;
+                }
+                else {
+                    if (!this.player.flipX) this.player.flipX = true;
+                }
+                this.player.isInFloor = true;
+                this.player.body.velocity.x = 60 * direction;
+                this.fallingAnimation = this.player.play('fall', true);
+
+                this.fallingAnimation.on('animationupdate', function () {
+                    if (this.fallingAnimation.anims.currentFrame.index < 3) {
+                        return;
+                    }
+                    this.fallingAnimation.off('animationupdate'); //STOPS LISTENER IF ANIMATION IS IN FRAME 3
+                    this.player.body.setVelocity(0);
+                }, this);
+
+                this.fallingAnimation.on('animationcomplete', function () {
+                    this.getUpAnimation = this.player.play('getUp', true);
+                    this.fallingAnimation.off('animationcomplete');
+
+                    this.getUpAnimation.on('animationcomplete', function () {
+                        this.player.isInFloor = false;
+                        this.player.canMove = true;
+                        this.getUpAnimation.off('animationcomplete');
+                    }, this);
+                }, this);
+            }
+            else {
+                //NORMAL HIT TAKE DAMAGE ANIMATION
+                this.recieveDmgAnimation = this.player.play('recieveDamage' + Phaser.Math.Between(1, 3), true);
+                this.recieveDmgAnimation.on('animationcomplete', function () {
+                    this.player.canMove = true;
+                    this.recieveDmgAnimation.off('animationcomplete');
+                }, this);
+            }
+
+            if (this.playerVulnerable) {
+                this.vulnerabilityTimer = this.time.delayedCall(gamePrefs.knockDownTimer, function () { this.playerVulnerable = true }, [], this);
+                this.playerVulnerable = false;
+                this.health[this.player.health - 1].visible = false;
+                this.player.health--;
+                this.checkPlayerHealth();
+            }
+        }
+    }
+
+    loadPlayerData() {
+        this.player.highScore = parseInt(localStorage.getItem('score')) || '00';
+    }
+
+    //#region  UPDATES
+    updateExp(exp) {
+        this.player.exp += exp;
+        this.expText.setText(this.player.exp);
+    }
+
+    createWeapon(_posx, _posY, _tag, velX, velY, _throwerY) {
+        this.weapon = new weapon(this, _posx, _posY, _tag, velX, velY, _throwerY);
+        this.hasWeapon = true;
+    }
+    updateScore(score) {
+        this.player.score += score; //SCORE EARNED DEPENDS ON ATTACK USED
+        this.scoreNumbersText.setText(this.player.score);
+
+        if (this.player.score >= this.player.highScore) {
+            this.player.highScore = this.player.score;
+            this.highScoreNumbersText.setText(this.player.highScore);
+            localStorage.setItem('score', this.player.highScore);
+        }
+    }
+
+    updateLevel() {
+        if (this.player.exp >= 1000 && this.player.level < 7) {
+            this.levelUpSound.play();
+            this.player.level++;
+            this.player.exp = 0;
+            this.expText.setText(this.player.exp.toString());
+            this.hearts[this.player.level - 1].visible = true;
+        }
+    }
+    //#endregion
+
+    //#region CREATE ANIMATIONS
+    createPlayerAnims() {
+        this.anims.create({
+            key: 'run',
+            frames: this.anims.generateFrameNumbers('player', { start: 3, end: 1 }),
+            frameRate: 5,
+            yoyo: true,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'kick',
+            frames: this.anims.generateFrameNumbers('player', { frames: [6, 7, 7] }),
+            frameRate: 10
+        });
+
+        this.anims.create({
+            key: 'headbutt',
+            frames: this.anims.generateFrameNumbers('player', { frames: [9, 10, 10] }),
+            frameRate: 10
+        });
+
+        this.anims.create({
+            key: 'fall',
+            frames: this.anims.generateFrameNumbers('player', { frames: [18, 18, 17, 17] }),
+            frameRate: 5
+        });
+
+        this.anims.create({
+            key: 'getUp',
+            frames: this.anims.generateFrameNumbers('player', { frames: [16, 16, 1] }),
+            frameRate: 5
+        });
+
+        this.anims.create({
+            key: 'recieveDamage1',
+            frames: this.anims.generateFrameNumbers('player', { frames: [19, 19] }),
+            frameRate: 10
+        });
+
+        this.anims.create({
+            key: 'recieveDamage2',
+            frames: this.anims.generateFrameNumbers('player', { frames: [21, 21] }),
+            frameRate: 10
+        });
+
+        this.anims.create({
+            key: 'recieveDamage3',
+            frames: this.anims.generateFrameNumbers('player', { frames: [24, 24] }),
+            frameRate: 10
         });
     }
-    preload()
-    { //carga los assets en memoria
-        this.cameras.main.setBackgroundColor("#000000");
-        var rutaImg = 'assets/img/';
-        //this.load.image('background1',rutaImg+'background_back.png');
-        //this.load.image('background2',rutaImg+'background_frontal.png');
 
-        //this.load.spritesheet('nave',rutaImg+'naveAnim.png',
-        //{frameWidth:16,frameHeight:24});
-        this.load.image('bullet', 	rutaImg+'spr_bullet_0.png');
-        this.load.image('enemyBullet', 	rutaImg+'spr_enemy_bullet_0.png');
-        this.load.spritesheet('enemy',rutaImg+'enemy-medium.png',
-        {frameWidth:32,frameHeight:16});
-        this.load.spritesheet('explosion',rutaImg+'explosion.png',
-        {frameWidth:16,frameHeight:16});
-        this.load.spritesheet('powerUp1',rutaImg+'spr_power_up.png',
-        {frameWidth:16,frameHeight:16});
-        this.load.spritesheet('powerUp2',rutaImg+'spr_power_up_2.png',
-        {frameWidth:16,frameHeight:16});
-        this.load.image('scoreUI',rutaImg+'spr_score_0.png');
-        this.load.spritesheet('escudo',rutaImg+'spr_armor.png',
-        {frameWidth: 66, frameHeight: 28});
-
-        //---------AUDIO----------//
-        this.load.setPath('assets/sounds/')
-        this.load.audio('shoot','snd_shoot.mp3');
-        this.load.audio('hitEnemy','snd_hit.wav');
-        this.load.audio('enemyExplodes','explosion.wav');
-      
+    createWilliamsAnims() {
+        this.anims.create({
+            key: 'williamsrun',
+            frames: this.anims.generateFrameNumbers('williams', { start: 0, end: 2 }),
+            frameRate: 5,
+            yoyo: true,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'williamstakeDmg',
+            frames: this.anims.generateFrameNumbers('williams', { start: 5, end: 7 }),
+            frameRate: 5,
+            yoyo: true,
+            repeat: 0
+        });
+        this.anims.create({
+            key: 'williamsdie',
+            frames: this.anims.generateFrameNumbers('williams', { start: 8, end: 9 }),
+            frameRate: 5,
+            yoyo: false,
+            repeat: 0
+        });
     }
-    create()
-    { //carga los assets en pantalla desde memoria
-       this.bg1 = this.add.tileSprite(0,0,config.width,config.height,'background1').setOrigin(0);
-       this.bg2 = this.add.tileSprite(0,0,config.width,config.height,'background2').setOrigin(0); 
+    createAbobosAnims() {
+        this.anims.create({
+            key: 'abobosrun',
+            frames: this.anims.generateFrameNumbers('abobos', { start: 0, end: 2 }),
+            frameRate: 5,
+            yoyo: true,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'abobostakeDmg',
+            frames: this.anims.generateFrameNumbers('abobos', { start: 5, end: 7 }),
+            frameRate: 5,
+            yoyo: true,
+            repeat: 0
+        });
+        this.anims.create({
+            key: 'abobosdie',
+            frames: this.anims.generateFrameNumbers('abobos', { start: 8, end: 9 }),
+            frameRate: 5,
+            yoyo: false,
+            repeat: 0
+        });
+        this.anims.create({
+            key: 'abobosBigAttack',
+            frames: this.anims.generateFrameNumbers('abobos', { frames: [11, 11, 12] }),
+            frameRate: 5,
+            yoyo: false,
+            repeat: 0
+        });
+        this.anims.create({
+            key: 'abobosKick',
+            frames: this.anims.generateFrameNumbers('abobos', { frames: [13, 13, 13] }),
+            frameRate: 5,
+            yoyo: false,
+            repeat: 0
+        });
+    }
+    createLindasAnims() {
+        this.anims.create({
+            key: 'lindasrun',
+            frames: this.anims.generateFrameNumbers('lindas', { start: 0, end: 2 }),
+            frameRate: 5,
+            yoyo: true,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'lindasrunweapon',
+            frames: this.anims.generateFrameNumbers('lindas', { start: 15, end: 17 }),
+            frameRate: 5,
+            yoyo: true,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'lindasattackweapon',
+            frames: this.anims.generateFrameNumbers('lindas', { frames: [5, 6, 7, 7] }),
+            frameRate: 5,
+            repeat: 0
+        });
+        this.anims.create({
+            key: 'lindastakeDmg',
+            frames: this.anims.generateFrameNumbers('lindas', { start: 11, end: 12 }),
+            frameRate: 5,
+            yoyo: true,
+            repeat: 0
+        });
+        this.anims.create({
+            key: 'lindastakeDmgweapon',
+            frames: this.anims.generateFrameNumbers('lindas', { start: 13, end: 14 }),
+            frameRate: 5,
+            yoyo: true,
+            repeat: 0
+        });
+        this.anims.create({
+            key: 'lindasdie',
+            frames: this.anims.generateFrameNumbers('lindas', { start: 8, end: 9 }),
+            frameRate: 5,
+            yoyo: false,
+            repeat: 0
+        });
+    }
+    createLoparAnims() {
+        this.anims.create({
+            key: 'loparsrun',
+            frames: this.anims.generateFrameNumbers('lopars', { start: 0, end: 2 }),
+            frameRate: 5,
+            yoyo: true,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'loparsrunweapon',
+            frames: this.anims.generateFrameNumbers('lopars', { frames: [17, 16, 15] }),
+            frameRate: 5,
+            yoyo: true,
+            repeat: -1
+        });
+        this.anims.create({
+            key: 'loparsattackweapon',
+            frames: this.anims.generateFrameNumbers('lopars', { frames: [12, 11] }),
+            frameRate: 10,
+            repeat: 0
+        });
+        this.anims.create({
+            key: 'loparstakeDmg',
+            frames: this.anims.generateFrameNumbers('lopars', { start: 5, end: 7 }),
+            frameRate: 5,
+            yoyo: true,
+            repeat: 0
+        });
+        this.anims.create({
+            key: 'loparstakeDmgweapon',
+            frames: this.anims.generateFrameNumbers('lopars', { frames: [17, 14] }),
+            frameRate: 5,
+            yoyo: true,
+            repeat: 0
+        });
+        this.anims.create({
+            key: 'loparsdie',
+            frames: this.anims.generateFrameNumbers('lopars', { start: 8, end: 9 }),
+            frameRate: 5,
+            yoyo: false,
+            repeat: 0
+        });
+    }
+    //#endregion
 
-       //this.nave = this.add.sprite(config.width/2,config.height/2,'nave').setOrigin(.5).setScale(3);
-       //this.nave = this.add.sprite(config.width/2,config.height*.95,'nave').setOrigin(.5).setScale(1);
-       this.nave = this.physics.add.sprite(config.width/2,config.height*.95,'nave').setOrigin(.5).setScale(1);
-       
-       this.nave.body.collideWorldBounds = true;
+    changeScene() {
+        this.music.stop();
+        this.scene.start('level2', {
+            player: this.player //--> Pass player data to save it across scene change
+        });
+    }
 
+    advanceInScene() {
+        this.numMapSubdivisions -= this.count;
+        if (this.hasWeapon) {
+            this.weapon.destroy();
+            this.hasWeapon = false;
+        }
+        this.flipFlop = true;
+        this.canAdvance = true;
+        if (this.changeThumbsUp) {
+            this.changeThumbsUp = false;
+            this.thumbsUpTimer = this.time.addEvent({
+                delay: 450, callback: function () {
+                    !this.thumbsUpFlipFlop ? this.thumbsUpImage.visible = true : this.thumbsUpImage.visible = false;
+                    this.thumbsUpFlipFlop = !this.thumbsUpFlipFlop;
+                    this.thumbsUpSound.play();
+                },
+                callbackScope: this,
+                repeat: 3
+            });
+        }
+        this.thumbsUpFlipFlop = false;
+    }
 
-        this.loadPools();
-        this.loadAnimations();
-        //this.loadBullets();
-        //this.loadEnemies();
-        //this.loadExplosions();
-        this.loadSounds();
-
-        this.cursores = this.input.keyboard.createCursorKeys();
-
-        //this.enemy = this.physics.add.sprite(config.width/2,config.height/2,'enemy').setOrigin(.5).setScale(2);
-
-        //Disparo automático
-        
-        /*
-        this.shootingTimer = this.time.addEvent
-        (
-            {
-                delay:250, //ms
-                callback:this.createBullet,
-                callbackScope:this,
-                repeat: -1
-            }
-        );
-        */
-
-        //Diparo manual
-        this.puedoDisparar = true;
-        
-        this.cursores.up.on
-        (
-            'down', 
-            function()
-            {
-                if(this.puedoDisparar)
-                {
-                    this.createBullet();
-                    this.puedoDisparar = false;
-                    this.shootingTimer = this.time.addEvent
-                    (
-                        {
-                            delay:1000, //ms
-                            callback:function()
-                            {
-                                this.puedoDisparar = true;
-                            },
-                            callbackScope:this,
-                            repeat: 0
-                        }
-                    );
+    //CHECK IF PLAYER DIES
+    checkPlayerHealth() {
+        if (this.player.health <= 0) {
+            this.player.kill();
+            this.music.play();
+            if (this.player.lifes >= 0) {
+                this.gameTime = 200;
+                this.lifesText.setText("P-" + this.player.lifes);
+                this.timeText.setText('TIME ' + this.gameTime);
+                for (var i = 0; i < this.player.health; i++) {
+                    this.health[i].visible = true;
                 }
             }
-            ,this
-        );
-
-        this.enemyTimer = this.time.addEvent
-        (
-            {
-                delay:2000, //ms
-                callback:this.createEnemy,
-                callbackScope:this,
-                repeat: -1
+            else {
+                this.scene.pause();
+                this.music.stop();
+                this.gameTimer.remove();
+                this.timeText.setText("GAME OVER");
+                this.gameOverMusic.on('complete', function () { this.scene.start('menu'); }, this);
+                this.gameOverMusic.play();
             }
-        );
-
-        
-
-        this.physics.add.overlap
-        (
-            this.bullets,
-            this.enemies,
-            this.killEnemy,
-            null,
-            this
-        );
-
-        this.scoreBoxUI = this.add.sprite(config.width-5,5,'scoreUI')
-        .setOrigin(1,0).setScale(.5);
-        this.scoreText = this.add.text(config.width-8, 6, '00000', 
-            {fontFamily: 'Arial', 
-             fontSize: '10px',   
-             color:'#fff' 
-            })
-            .setOrigin(1,0);
-        
-        this.nave.escudoMAX = 4;
-        this.nave.escudo = this.nave.escudoMAX;
-        this.escudoUI = this.add.sprite(5,5,'escudo')
-        .setOrigin(0)
-        .setScale(.5)
-        .setFrame(this.nave.escudo);
-
-    }
-
-    loadSounds()
-    {
-        this.shoot = this.sound.add('shoot');
-        this.hitEnemy = this.sound.add('hitEnemy');
-        this.enemyExplodes = this.sound.add('enemyExplodes');
-    }
-
-    loadAnimations()
-    {
-        this.anims.create({
-            key: 'standPowerUp1',
-            frames: this.anims.generateFrameNumbers('powerUp1', { start: 0, end: 1 }),
-            frameRate: 2,
-            repeat: -1
-        });
-        
-        this.anims.create({
-            key: 'standPowerUp2',
-            frames: this.anims.generateFrameNumbers('powerUp2', { start: 0, end: 1 }),
-            frameRate: 2,
-            repeat: -1
-        });
-        /*
-        this.anims.create({
-            key: 'idle',
-            frames: this.anims.generateFrameNumbers('nave', { start: 0, end: 1 }),
-            frameRate: 10,
-            repeat: -1
-        });*/
-        this.nave.anims.play('idle');
-        
-        this.anims.create({
-            key: 'left',
-            frames: this.anims.generateFrameNumbers('nave', { start: 2, end: 3 }),
-            frameRate: 10,
-            repeat: -1
-        });
-		this.anims.create({
-            key: 'right',
-            frames: this.anims.generateFrameNumbers('nave', { start: 4, end: 5 }),
-            frameRate: 10,
-            repeat: -1
-        });
-        this.anims.create({
-            key: 'idleEnemy',
-            frames: this.anims.generateFrameNumbers('enemy', { start: 0, end: 1 }),
-            frameRate: 10,
-            repeat: -1
-        });
-        this.anims.create({
-            key: 'explosionAnim',
-            frames: this.anims.generateFrameNumbers('explosion', { start: 0, end: 4 }),
-            frameRate: 10,
-            repeat: 0,
-            showOnStart:true,
-            hideOnComplete:true
-        });
-    }
-
-    loadPools()
-    {
-        this.bullets = this.physics.add.group();
-        this.explosions = this.add.group();
-        this.enemies = this.physics.add.group();
-        this.enemyBullets = this.physics.add.group();
-        this.powerUps = this.physics.add.group();
-    }
-  
-
-    createExplosion(_bullet)
-    {
-        var _explosion = this.explosions.getFirst(false);  //Buscamos en el pool de explosiones si hay alguna reutilizable
-        if(!_explosion)
-        {//No hay
-            console.log('Create explosion');
-            _explosion = new explosionPrefab(this,_bullet.x,_bullet.y,'explosion');
-            this.explosions.add(_explosion);
-        }else
-        {//Si hay
-            console.log('Reset explosion');
-            _explosion.active = true;
-            _explosion.x=_bullet.x;
-            _explosion.y=_bullet.y;
-            _explosion.anims.play('explosionAnim');
-        }        
-    }
-
-    createPowerUp(_posX, _posY,_tipo){
-		var powerUp = this.powerUps.getFirst(false);
-        
-        if(_posX<16)
-            _posX=16;
-        
-        if (_posX>config.width-16)
-            _posX=config.width-16;
-
-        if(!powerUp){
-            //crea un powerUp nueva
-			console.log('create powerUp tipo:'+_tipo); 
-			powerUp = new  powerUpPrefab(this,_posX,_posY,_tipo);
-            this.powerUps.add(powerUp);
-            powerUp.anims.play('standPowerUp'+_tipo);
-		} else{
-			//reset
-            powerUp.setTexture('powerUp'+_tipo,0);
-            
-            powerUp.active = true;
-            powerUp.body.reset(_posX,_posY);
-		}
-		//Damos velocidad
-        powerUp.tipo = _tipo;
-		powerUp.body.setVelocityY(gamePrefs.POWER_UP_SPEED);
-	}
-
-    createBullet()
-    {
-        var _bullet = this.bullets.getFirst(false);  //Buscamos en el pool de balas si hay alguna reutilizable
-        if(!_bullet)
-        {//No hay
-            console.log('Create Bullet');
-            _bullet = new bulletPrefab(this,this.nave.x,this.nave.y,'bullet');
-            this.bullets.add(_bullet);
-        }else
-        {//Si hay
-            console.log('Reset Bullet');
-            _bullet.active = true;
-            _bullet.body.reset(this.nave.x,this.nave.y);
         }
-        //Sea una bala nueva o una reutilizable, le damos velocidad
-        _bullet.body.setVelocityY(gamePrefs.speedBullet);
-        this.shoot.play();
-    }
-
-    createEnemyBullet(_enemy)
-    {
-        var _bullet = this.enemyBullets.getFirst(false);  //Buscamos en el pool de balas si hay alguna reutilizable
-        if(!_bullet)
-        {//No hay
-            console.log('Create Bullet');
-            _bullet = new enemyBulletPrefab(this,_enemy.x,_enemy.y,'enemyBullet');
-            this.enemyBullets.add(_bullet);
-        }else
-        {//Si hay
-            console.log('Reset Bullet');
-            _bullet.active = true;
-            _bullet.body.reset(_enemy.x,_enemy.y);
-        }
-        //Sea una bala nueva o una reutilizable, le damos velocidad
-        _bullet.body.setVelocityY(gamePrefs.BULLET_ENEMY_SPEED);
-        this.shoot.play();
-    }
-
-    createEnemy()
-    {
-        var _enemy = this.enemies.getFirst(false);  //Buscamos en el pool de enemigos si hay alguna reutilizable
-        var posX = Phaser.Math.Between(16,config.width-16);
-        var posY = -16;
-        if(!_enemy)
-        {//No hay
-            console.log('Create Enemy');            
-            _enemy = new enemyPrefab(this,posX,posY,'enemy');
-            this.enemies.add(_enemy);
-        }else
-        {//Si hay
-            console.log('Reset Enemy');
-            _enemy.active = true;
-            _enemy.body.reset(posX,posY);
-            _enemy.health = 2;
-        }
-        //Sea un enemigo nuevo o uno reutilizable, le damos velocidad
-        _enemy.body.setVelocityY(gamePrefs.speedEnemy);
-
-        var rnd= Phaser.Math.Between(3,6);
-        _enemy.shootingTimer = this.time.addEvent({
-            delay:rnd*1000,
-            callback:this.createEnemyBullet,
-            args:[_enemy],
-            callbackScope:this,
-            repeat:1
-        });
-    }
-
-    killEnemy(_bullet,_enemy)
-    {
-        //Una bala ha impactado en un enemigo
-        console.log('kill');
-        this.createExplosion(_bullet);
-        _bullet.setActive(false);
-        _bullet.x = config.width+_bullet.width;
-        
-
-        _enemy.health--;
-
-        
-        
-
-        if(_enemy.health<=0)
-        {
-            //sonido de "adios enemigo"
-            this.enemyExplodes.play();
-            //Incrementar puntuación
-            //Valorar drop de powerUp
-            var rnd = Phaser.Math.Between(1,5); //20% de posibilidades de 
-            if(rnd==1)
-            {
-                var tipo = Phaser.Math.Between(1,2);
-                //console.log(tipo);
-                //tocaria asegurarse que el powerup no sale cortado
-                this.createPowerUp(_enemy.body.x, _enemy.body.y,tipo);
-            } 
-
-
-
-
-            _enemy.setActive(false);
-            _enemy.x = config.width+_enemy.width;
-        }else
-        {
-            //sonido tocado pero no hundido
-            this.hitEnemy.play();
-        }
-        
-    }
-
-    update()
-    { //actualiza assets
-        this.bg1.tilePositionY -=.25;
-        this.bg2.tilePositionY -=1;
-
-        if(this.cursores.left.isDown){            			
-            this.nave.anims.play('left',true);
-			this.nave.body.velocity.x -=gamePrefs.speedNave;
-		} else if(this.cursores.right.isDown){            
-			this.nave.anims.play('right',true);           
-            this.nave.body.velocity.x += gamePrefs.speedNave;        
-		} else{
-			this.nave.anims.play('idle',true);
-			//this.nave.body.velocity.x=0;
-		}
-
     }
 }
