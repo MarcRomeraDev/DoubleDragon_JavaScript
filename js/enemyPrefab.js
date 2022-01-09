@@ -145,7 +145,7 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
                 {
                     this.enemyHitbox.x = this.flipX ? _enemy.x - _enemy.width * 0.2 : _enemy.x + _enemy.width * 0.2;
                     this.enemyHitbox.y = _enemy.y - _enemy.height * 0.03;
-                }
+                } 
                 _enemy.anims.play(this.eType + 'run', false);
                 this.scene.physics.world.add(this.enemyHitbox.body); //--> Adds hitbox to the attack when pressing input
                 this.scene.ePunchSound.play();

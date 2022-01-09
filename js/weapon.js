@@ -47,7 +47,6 @@ class weapon extends Phaser.GameObjects.Sprite {
     }
     canBePickedUp()
     {
-        this.scene.physics.world.removeCollider(this);
         this.isOnGround = true;
         this.body.velocity.x = 0;
         this.body.bounce.set(0.01);
