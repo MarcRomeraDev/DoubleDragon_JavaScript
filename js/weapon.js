@@ -15,22 +15,25 @@ class weapon extends Phaser.GameObjects.Sprite {
         this.line.body.immovable = true;
         this.knockDownPlayer = true;
         this.scene.physics.add.collider(this, this.line);
+        this.type = _tag;
         if(_tag == 'barrel')
         {
             this.body.bounce.set(0.9);
-            this.scene.physics.add.overlap(this, this.scene.player, this.scene.dmgPlayer, null, this.scene);
+            this.scene.physics.add.overlap(this, this.scene.player, this.damagePlayer, null, this);
 
-        }
-        else{
-            this.isOnGround = true;
         }
         this.pickUpTimer = this.scene.time.delayedCall(gamePrefs.barrelTimer, this.canBePickedUp, [], this);
 
     }
+    damagePlayer()
+    {
+        if(!this.isOnGround && Phaser.Math.Distance.Between(this.scene.player.body.y + this.scene.player.height, 0, this.line.body.y, 0) <= gamePrefs.heightThreshold)
+        {
+            this.scene.dmgPlayer(this);
+        }
+    }
     preUpdate()
     {
-        
-        
         if(this.isBackgroundMoving)
         {
                 if (this.body.velocity.x < -gamePrefs.playerSpeed)
@@ -48,6 +51,7 @@ class weapon extends Phaser.GameObjects.Sprite {
     canBePickedUp()
     {
         this.isOnGround = true;
+
         this.body.velocity.x = 0;
         this.body.bounce.set(0.01);
         this.scene.physics.add.overlap(this, this.scene.waveSystem.enemies, this.scene.waveSystem.giveWeapon, null, this.scene.waveSystem);

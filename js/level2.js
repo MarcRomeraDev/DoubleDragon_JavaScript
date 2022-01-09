@@ -23,7 +23,10 @@ class level2 extends Phaser.Scene {
         this.gameTime = 200;
         this.maxY = config.height / 3 + 5;
         this.minY = config.height / 2 + 15;
-
+        this.flipFlop = false;
+        this.numMapSubdivisions = 1015 / config.width;
+        this.count = this.numMapSubdivisions / 4;
+        this.canAdvance = false;
         this.gameTimer = this.time.addEvent({
             delay: 1000, callback: function () {
                 this.gameTime--;
@@ -62,6 +65,11 @@ class level2 extends Phaser.Scene {
 
         this.createBackgroundAnim();
         //this.physics.add.overlap(this.player.attackHitbox, this.waveSystem.enemies, this.waveSystem.dmgEnemy, null, this.waveSystem);
+        this.waveSystem = new waveSystemManager(this,2);
+        this.playerVulnerable = true;
+        this.weapon;
+        this.hasWeapon = false;
+        this.physics.add.overlap(this.player.attackHitbox, this.waveSystem.enemies, this.waveSystem.dmgEnemy, null, this.waveSystem);
 
         this.playerText = this.add.text(20, config.height - 20, '1P', { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //player
         this.expText = this.add.text(20, config.height - 12, this.player.exp, { fontFamily: 'dd_font', fontSize: '7px' }).setOrigin(0.5).setSize(); //exp
@@ -94,7 +102,66 @@ class level2 extends Phaser.Scene {
             }
         }
     }
+    dmgPlayer(hit) {
+        if (this.player.canMove) {
+            //PREVENTS FROM PLAYER'S ATTACK HITBOX GENERATING AFTER GETTING HIT GLITCH
+            if (this.player.headbuttAnimation != null) this.player.headbuttAnimation.off('animationupdate'); //STOPS LISTENER IF ANIMATION IS IN FRAME 3
+            if (this.player.kickAnimation != null) this.player.kickAnimation.off('animationupdate'); //STOPS LISTENER IF ANIMATION IS IN FRAME 3
 
+            this.player.canMove = false;
+
+            //KNOCK DOWN TAKE DAMAGE ANIMATION
+            if (hit.knockDownPlayer) {
+                var direction = 1;
+
+                if (hit.x > this.player.body.x) {
+                    if (this.player.flipX) this.player.flipX = false;
+                    direction = -1;
+                }
+                else {
+                    if (!this.player.flipX) this.player.flipX = true;
+                }
+                this.player.isInFloor = true;
+                this.player.body.velocity.x = 60 * direction;
+                this.fallingAnimation = this.player.play('fall', true);
+
+                this.fallingAnimation.on('animationupdate', function () {
+                    if (this.fallingAnimation.anims.currentFrame.index < 3) {
+                        return;
+                    }
+                    this.fallingAnimation.off('animationupdate'); //STOPS LISTENER IF ANIMATION IS IN FRAME 3
+                    this.player.body.setVelocity(0);
+                }, this);
+
+                this.fallingAnimation.on('animationcomplete', function () {
+                    this.getUpAnimation = this.player.play('getUp', true);
+                    this.fallingAnimation.off('animationcomplete');
+
+                    this.getUpAnimation.on('animationcomplete', function () {
+                        this.player.isInFloor = false;
+                        this.player.canMove = true;
+                        this.getUpAnimation.off('animationcomplete');
+                    }, this);
+                }, this);
+            }
+            else {
+                //NORMAL HIT TAKE DAMAGE ANIMATION
+                this.recieveDmgAnimation = this.player.play('recieveDamage' + Phaser.Math.Between(1, 3), true);
+                this.recieveDmgAnimation.on('animationcomplete', function () {
+                    this.player.canMove = true;
+                    this.recieveDmgAnimation.off('animationcomplete');
+                }, this);
+            }
+
+            if (this.playerVulnerable) {
+                this.vulnerabilityTimer = this.time.delayedCall(gamePrefs.knockDownTimer, function () { this.playerVulnerable = true }, [], this);
+                this.playerVulnerable = false;
+                this.health[this.player.health - 1].visible = false;
+                this.player.health--;
+                this.checkPlayerHealth();
+            }
+        }
+    }
     //#region  UPDATES
     updateExp(exp) {
         this.player.exp += exp;
@@ -124,6 +191,9 @@ class level2 extends Phaser.Scene {
 
     updateConveyorBelt() {
         if (this.player.body.y < config.height / 2 + 5 && this.player.body.y > config.height / 2 - 12 && this.player.body.x < config.width - 75) {
+            if(this.player.body.velocity.x + 30 > gamePrefs.playerSpeed+30)
+            this.player.body.velocity.x =  gamePrefs.playerSpeed+30;
+            else
             this.player.body.velocity.x += 30;
         }
         if (this.player.body.x > config.width - 75 && this.player.body.y > config.height / 2 - 12 && !this.player.isDead) {
