@@ -128,18 +128,18 @@ class gameState extends Phaser.Scene {
             if (this.player.kickAnimation != null) this.player.kickAnimation.off('animationupdate'); //STOPS LISTENER IF ANIMATION IS IN FRAME 3
 
             this.player.canMove = false;
-            var direction = 1;
-
-            if (hit.x > this.player.body.x) {
-                if (this.player.flipX) this.player.flipX = false;
-                direction = -1;
-            }
-            else {
-                if (!this.player.flipX) this.player.flipX = true;
-            }
 
             //KNOCK DOWN TAKE DAMAGE ANIMATION
             if (hit.knockDownPlayer) {
+                var direction = 1;
+
+                if (hit.x > this.player.body.x) {
+                    if (this.player.flipX) this.player.flipX = false;
+                    direction = -1;
+                }
+                else {
+                    if (!this.player.flipX) this.player.flipX = true;
+                }
                 this.player.isInFloor = true;
                 this.player.body.velocity.x = 60 * direction;
                 this.fallingAnimation = this.player.play('fall', true);
