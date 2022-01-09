@@ -13,7 +13,7 @@ class gameState extends Phaser.Scene {
         this.maxY = config.height / 2 + 5;
         this.minY = 2 / 3 * config.height + 5;
         this.beltForce = -5;
-        
+
         this.gameTimer = this.time.addEvent({
             delay: 1000, callback: function () {
                 this.gameTime--;
@@ -68,7 +68,6 @@ class gameState extends Phaser.Scene {
             }
         }
 
-        
         this.flipFlop = false;
         this.numMapSubdivisions = 1015 / config.width;
         this.count = this.numMapSubdivisions / 4;
@@ -78,7 +77,7 @@ class gameState extends Phaser.Scene {
         this.createLindasAnims();
         this.createLoparAnims();
         this.playerVulnerable = true;
-        
+
 
         this.waveSystem = new waveSystemManager(this);
 
@@ -110,8 +109,8 @@ class gameState extends Phaser.Scene {
 
         //INPUT TO TEST RECIEVE DAMAGE
         if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.h)) {
-           //this.dmgPlayer();
-           this.changeScene();
+            //this.dmgPlayer();
+            this.changeScene();
         }
 
         //INPUT TO TEST HEALING
@@ -122,25 +121,65 @@ class gameState extends Phaser.Scene {
             }
         }
     }
-    dmgPlayer(hit,player)
-    {
-        //call animation
-        
-        if(this.playerVulnerable)
-        {
-            console.log(hit.knockDownPlayer);
-            this.playerVulnerable = false;
-            this.vulnerabilityTimer = this.time.delayedCall(gamePrefs.knockDownTimer, this.changeVulnerability, [], this);
+    dmgPlayer(hit) {
+        if (this.player.canMove) {
+            //PREVENTS FROM PLAYER'S ATTACK HITBOX GENERATING AFTER GETTING HIT GLITCH
+            if (this.player.headbuttAnimation != null) this.player.headbuttAnimation.off('animationupdate'); //STOPS LISTENER IF ANIMATION IS IN FRAME 3
+            if (this.player.kickAnimation != null) this.player.kickAnimation.off('animationupdate'); //STOPS LISTENER IF ANIMATION IS IN FRAME 3
 
-            this.health[this.player.health - 1].visible = false;
-            this.player.health--;
-            this.checkPlayerHealth();
+            this.player.canMove = false;
+
+            //KNOCK DOWN TAKE DAMAGE ANIMATION
+            if (hit.knockDownPlayer) {
+                var direction = 1;
+
+                if (hit.x > this.player.body.x) {
+                    if (this.player.flipX) this.player.flipX = false;
+                    direction = -1;
+                }
+                else {
+                    if (!this.player.flipX) this.player.flipX = true;
+                }
+                this.player.isInFloor = true;
+                this.player.body.velocity.x = 60 * direction;
+                this.fallingAnimation = this.player.play('fall', true);
+
+                this.fallingAnimation.on('animationupdate', function () {
+                    if (this.fallingAnimation.anims.currentFrame.index < 3) {
+                        return;
+                    }
+                    this.fallingAnimation.off('animationupdate'); //STOPS LISTENER IF ANIMATION IS IN FRAME 3
+                    this.player.body.setVelocity(0);
+                }, this);
+
+                this.fallingAnimation.on('animationcomplete', function () {
+                    this.getUpAnimation = this.player.play('getUp', true);
+                    this.fallingAnimation.off('animationcomplete');
+
+                    this.getUpAnimation.on('animationcomplete', function () {
+                        this.player.isInFloor = false;
+                        this.player.canMove = true;
+                        this.getUpAnimation.off('animationcomplete');
+                    }, this);
+                }, this);
+            }
+            else {
+                //NORMAL HIT TAKE DAMAGE ANIMATION
+                this.recieveDmgAnimation = this.player.play('recieveDamage' + Phaser.Math.Between(1, 3), true);
+                this.recieveDmgAnimation.on('animationcomplete', function () {
+                    this.player.canMove = true;
+                    this.recieveDmgAnimation.off('animationcomplete');
+                }, this);
+            }
+
+            if (this.playerVulnerable) {
+                this.vulnerabilityTimer = this.time.delayedCall(gamePrefs.knockDownTimer, function () { this.playerVulnerable = true }, [], this);
+                this.playerVulnerable = false;
+                this.health[this.player.health - 1].visible = false;
+                this.player.health--;
+                this.checkPlayerHealth();
+            }
         }
-        //this.changeScene();
-    }
-    changeVulnerability()
-    {
-        this.playerVulnerable = true;
     }
 
     loadPlayerData() {
@@ -153,9 +192,8 @@ class gameState extends Phaser.Scene {
         this.expText.setText(this.player.exp);
     }
 
-    createWeapon(_posx,_posY,_tag,velX,velY,_throwerY)
-    {
-        this.weapon = new weapon(this,_posx,_posY,_tag,velX,velY,_throwerY);
+    createWeapon(_posx, _posY, _tag, velX, velY, _throwerY) {
+        this.weapon = new weapon(this, _posx, _posY, _tag, velX, velY, _throwerY);
         this.hasWeapon = true;
     }
     updateScore(score) {
@@ -199,6 +237,36 @@ class gameState extends Phaser.Scene {
         this.anims.create({
             key: 'headbutt',
             frames: this.anims.generateFrameNumbers('player', { frames: [9, 10, 10] }),
+            frameRate: 10
+        });
+
+        this.anims.create({
+            key: 'fall',
+            frames: this.anims.generateFrameNumbers('player', { frames: [18, 18, 17, 17] }),
+            frameRate: 5
+        });
+
+        this.anims.create({
+            key: 'getUp',
+            frames: this.anims.generateFrameNumbers('player', { frames: [16, 16, 1] }),
+            frameRate: 5
+        });
+
+        this.anims.create({
+            key: 'recieveDamage1',
+            frames: this.anims.generateFrameNumbers('player', { frames: [19, 19] }),
+            frameRate: 10
+        });
+
+        this.anims.create({
+            key: 'recieveDamage2',
+            frames: this.anims.generateFrameNumbers('player', { frames: [21, 21] }),
+            frameRate: 10
+        });
+
+        this.anims.create({
+            key: 'recieveDamage3',
+            frames: this.anims.generateFrameNumbers('player', { frames: [24, 24] }),
             frameRate: 10
         });
     }
@@ -299,7 +367,7 @@ class gameState extends Phaser.Scene {
         });
         this.anims.create({
             key: 'loparstakeDmgweapon',
-            frames: this.anims.generateFrameNumbers('lopars', { frames: [17,14] }),
+            frames: this.anims.generateFrameNumbers('lopars', { frames: [17, 14] }),
             frameRate: 5,
             yoyo: true,
             repeat: 0
@@ -323,8 +391,7 @@ class gameState extends Phaser.Scene {
 
     advanceInScene() {
         this.numMapSubdivisions -= this.count;
-        if(this.hasWeapon)
-        {
+        if (this.hasWeapon) {
             this.weapon.destroy();
             this.hasWeapon = false;
         }

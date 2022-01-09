@@ -40,6 +40,9 @@ class character extends Phaser.GameObjects.Sprite {
     this.headbuttLeftCount = 0;
     this.headbuttRight = false;
     this.headbuttLeft = false;
+    this.isInFloor = false;
+    this.kickAnimation;
+    this.kickAnimation;
     //#endregion
 
     this.setFrame(1);
@@ -72,6 +75,9 @@ class character extends Phaser.GameObjects.Sprite {
     this.body.collideWorldBounds = true;
     this.body.gravity.y = 0;
     this.isDead = false;
+    if (this.flipX) {
+      this.flipX = false;
+    }
     this.body.reset(config.width / 10, config.height / 2 + 22);
     if (this.lifes < 0) {
       this.visible = false;
@@ -80,20 +86,22 @@ class character extends Phaser.GameObjects.Sprite {
 
   //#region ATTACK
   attackManager() {
-    if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.s)) {
-      this.kickAttack();
-    }
+    if (!this.isInFloor && this.canMove && !this.isAttacking) {
+      if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.s)) {
+        this.kickAttack();
+      }
 
-    if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.a)) {
-      this.punchAttack();
+      if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.a)) {
+        this.punchAttack();
+      }
     }
   }
 
   headbuttAttack() {
     if (!this.isAttacking) {
       this.isAttacking = true;
-      this.headbuttAnimation = this.play('headbutt', true);
-
+      this.headbuttAnimation = this.play('headbutt');
+      this.body.setVelocity(0);
       this.attackHitbox.x = this.flipX ? this.x - this.width * 0.2 : this.x + this.width * 0.2;
       this.attackHitbox.y = this.y - this.height * 0.1;
       this.attackHitbox.type = 'HEADBUTT';
@@ -103,8 +111,7 @@ class character extends Phaser.GameObjects.Sprite {
           return;
         }
         this.headbuttAnimation.off('animationupdate'); //STOPS LISTENER IF ANIMATION IS IN FRAME 3
-        this.scene.physics.world.add(this.attackHitbox.body); //--> ADDS HITBOX WHEN THE ANIMATIONS IS IN ITS THIRD FRAME
-        //this.scene.punchSound.play();
+        this.attackHitbox.body.enable = true; //--> ADDS HITBOX WHEN THE ANIMATIONS IS IN ITS THIRD FRAME
       });
 
       this.headbuttAnimation.on('animationcomplete', function () { this.isAttacking = false; this.attackHitbox.body.enable = false; }, this);
@@ -112,62 +119,57 @@ class character extends Phaser.GameObjects.Sprite {
   }
 
   kickAttack() {
-    if (!this.isAttacking) {
-      this.isAttacking = true;
-      this.kickAnimation = this.play('kick', true);
+    this.isAttacking = true;
+    this.kickAnimation = this.play('kick');
+    this.body.setVelocity(0);
+    this.attackHitbox.x = this.flipX ? this.x - this.width * 0.2 : this.x + this.width * 0.2;
+    this.attackHitbox.y = this.y + this.height * 0.1;
 
-      this.attackHitbox.x = this.flipX ? this.x - this.width * 0.2 : this.x + this.width * 0.2;
-      this.attackHitbox.y = this.y + this.height * 0.1;
+    this.attackHitbox.type = 'KICK';
 
-      this.attackHitbox.type = 'KICK';
+    this.kickAnimation.on('animationupdate', function () {
+      if (this.kickAnimation.anims.currentFrame.index < 3) {
+        return;
+      }
+      this.kickAnimation.off('animationupdate'); //STOPS LISTENER IF ANIMATION IS IN FRAME 3
+      this.attackHitbox.body.enable = true; //--> ADDS HITBOX WHEN THE ANIMATIONS IS IN ITS THIRD FRAME
+    });
 
-      this.kickAnimation.on('animationupdate', function () {
-        if (this.kickAnimation.anims.currentFrame.index < 3) {
-          return;
-        }
-        this.kickAnimation.off('animationupdate'); //STOPS LISTENER IF ANIMATION IS IN FRAME 3
-        this.scene.physics.world.add(this.attackHitbox.body); //--> ADDS HITBOX WHEN THE ANIMATIONS IS IN ITS THIRD FRAME
-        // this.scene.kickSound.play();
-      });
-
-      this.kickAnimation.on('animationcomplete', function () { this.isAttacking = false; this.attackHitbox.body.enable = false; }, false);
-    }
+    this.kickAnimation.on('animationcomplete', function () { this.isAttacking = false; this.attackHitbox.body.enable = false; }, this);
   }
 
   punchAttack() {
-    if (!this.isAttacking) {
-      if (this.attackFlipFlop) {
-        this.setFrame(4)
-      }
-      else {
-        this.setFrame(5);
-      }
-
-      this.attackFlipFlop = !this.attackFlipFlop;
-      this.punchTimer = this.scene.time.delayedCall(gamePrefs.punchDuration, function () { this.setFrame(1); }, [], this);
-      this.stop();
-      //this.scene.punchSound.play();
-      this.isAttacking = true;
-
-      //Sets hitbox position infront of player and facing same way as player
-      this.attackHitbox.x = this.flipX ? this.x - this.width * 0.2 : this.x + this.width * 0.2;
-      this.attackHitbox.y = this.y - this.height * 0.1;
-
-      this.attackHitbox.type = 'PUNCH';
-
-      this.scene.physics.world.add(this.attackHitbox.body); //--> Adds hitbox to the attack when pressing input
-
-      this.AttackingTimer = this.scene.time.delayedCall(gamePrefs.attackRate, function () { this.isAttacking = false; }, [], this);
-
-      // Removes hitbox of attack when attack ends
-      this.HitBoxTimer = this.scene.time.delayedCall(gamePrefs.punchCollisionDuration, function () { this.attackHitbox.body.enable = false; }, [], this);
+    if (this.attackFlipFlop) {
+      this.setFrame(4)
     }
+    else {
+      this.setFrame(5);
+    }
+    this.body.setVelocity(0);
+    this.attackFlipFlop = !this.attackFlipFlop;
+    this.punchTimer = this.scene.time.delayedCall(gamePrefs.punchDuration, function () { this.setFrame(1); }, [], this);
+    this.stop();
+    this.isAttacking = true;
+
+    //Sets hitbox position infront of player and facing same way as player
+    this.attackHitbox.x = this.flipX ? this.x - this.width * 0.2 : this.x + this.width * 0.2;
+    this.attackHitbox.y = this.y - this.height * 0.1;
+
+    this.attackHitbox.type = 'PUNCH';
+
+    this.scene.physics.world.add(this.attackHitbox.body); //--> Adds hitbox to the attack when pressing input
+
+    this.AttackingTimer = this.scene.time.delayedCall(gamePrefs.attackRate, function () { this.isAttacking = false; }, [], this);
+
+    // Removes hitbox of attack when attack ends
+    this.HitBoxTimer = this.scene.time.delayedCall(gamePrefs.punchCollisionDuration, function () { this.attackHitbox.body.enable = false; }, [], this);
   }
   //#endregion
 
   //#region  MOVE
   movementManager() {
-    this.body.setVelocity(0, 0);
+    if (!this.isInFloor) this.body.setVelocity(0);
+    
     if (!this.isAttacking && this.canMove) {
       if (this.cursorKeys.down.isDown) { // down
         if (this.body.y < this.scene.minY) {
@@ -203,8 +205,6 @@ class character extends Phaser.GameObjects.Sprite {
           this.headbuttLeft = true;
           this.headbuttRightCount = 0;
           this.headbuttLeftCount++;
-          console.log(this.headbuttLeftCount);
-          console.log(this.headbuttLeft);
           if (this.headbuttLeftCount >= 2) {
             this.headbuttLeftCount = 0;
             this.headbuttLeft = false;
@@ -238,8 +238,8 @@ class character extends Phaser.GameObjects.Sprite {
             this.scene.thumbsUpTimer.remove();
             this.scene.bg1.tilePositionX += gamePrefs.backgroundSpeed; //--> Background scroll speed
             this.body.velocity.x = 0.001;
-            if(this.scene.hasWeapon)
-                this.scene.weapon.isBackgroundMoving = true;
+            if (this.scene.hasWeapon)
+              this.scene.weapon.isBackgroundMoving = true;
             this.scene.waveSystem.moveAllEnemiesWhenWalking();
           }
 
@@ -250,7 +250,7 @@ class character extends Phaser.GameObjects.Sprite {
         else {
           this.scene.canAdvance = false;
           this.scene.flipFlop = false;
-          
+
         }
       }
 
