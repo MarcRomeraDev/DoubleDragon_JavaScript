@@ -57,7 +57,7 @@ class menu extends Phaser.Scene {
         this.menuMusic = this.sound.add('menuMusic', { volume: .1, loop: true });
         this.mission1TitleScreenMusic = this.sound.add('mission1TitleScreen', { volume: .1 });
         this.menuMusic.play();
-
+        this.doOnce = false;
         this.keyboardKeys = this.input.keyboard.addKeys({
             a: Phaser.Input.Keyboard.KeyCodes.A
         });
@@ -85,13 +85,13 @@ class menu extends Phaser.Scene {
 
     update() {
         //INPUT TO CHANGE SCENE--> A
-        if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.a)) {
-            //this.backgroundAnim.stop();
-            //this.backgroundAnim.setTexture('mission1bg');
+        if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.a) && !this.doOnce) {
+            this.backgroundAnim.stop();
+            this.doOnce = true;
+            this.backgroundAnim.setTexture('mission1bg');
             this.menuMusic.stop();
-            this.changeScene();
-            //this.mission1TitleScreenMusic.on('complete', this.changeScene, this);
-            //this.mission1TitleScreenMusic.play();
+            this.mission1TitleScreenMusic.on('complete', this.changeScene, this);
+            this.mission1TitleScreenMusic.play();
         }
     }
 }

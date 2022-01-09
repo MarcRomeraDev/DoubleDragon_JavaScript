@@ -8,32 +8,12 @@ class enemyWilliams extends enemyPrefab {
         this.body.setSize(16, 38, true);
         this.flipHitBox();
 
-        //_scene.physics.add.sprite(_posX, _posY, _tag).setOrigin(.5);
-        //this.body.setSize(16, 37, true).setOffset(30, 10);
-
         this.body.collideWorldBounds = true; //--> Collision with world border walls
         this.body.onWorldBounds = true; //--> On collision event
-        //  _scene.physics.world.enable(this);
-
-        //this.anims.play('crawl',true);
-        //this.direction = 1;
 
         this.target = character;
 
         this.scene = _scene;
-
-        //this.body.velocity.x = gameOptions.jumperSpeed*this.direction;
-
-        //_scene.physics.add.collider(this,_scene.player,this.hit,null,this);
-        /*this.enemyTimer = this.scene.time.addEvent
-        (
-            {
-                delay:100000, //ms
-                callback:this.attack,
-                callbackScope:this,
-                repeat: 0
-            }
-        );*/
     }
 
     preUpdate(time, delta) {

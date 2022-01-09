@@ -80,12 +80,7 @@ class gameState extends Phaser.Scene {
         this.playerVulnerable = true;
 
 
-        this.waveSystem = new waveSystemManager(this,1);
-
-        /*this.barrel  = this.add.sprite(config.width - 40, config.height / 2, 'barrel');
-        this.whip  = this.add.sprite(config.width - 40, config.height / 2, 'whip');
-        this.weapons.add(this.barrel);
-        this.weapons.add(this.whip);*/
+        this.waveSystem = new waveSystemManager(this, 1);
         this.weapon;
         this.hasWeapon = false;
         this.physics.add.overlap(this.player.attackHitbox, this.waveSystem.enemies, this.waveSystem.dmgEnemy, null, this.waveSystem);
@@ -110,7 +105,6 @@ class gameState extends Phaser.Scene {
 
         //INPUT TO TEST RECIEVE DAMAGE
         if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.h)) {
-            //this.dmgPlayer();
             this.changeScene();
         }
 
@@ -319,14 +313,14 @@ class gameState extends Phaser.Scene {
         });
         this.anims.create({
             key: 'abobosBigAttack',
-            frames: this.anims.generateFrameNumbers('abobos', { frames: [11,11,12]}),
+            frames: this.anims.generateFrameNumbers('abobos', { frames: [11, 11, 12] }),
             frameRate: 5,
             yoyo: false,
             repeat: 0
         });
         this.anims.create({
             key: 'abobosKick',
-            frames: this.anims.generateFrameNumbers('abobos', { frames: [13,13,13] }),
+            frames: this.anims.generateFrameNumbers('abobos', { frames: [13, 13, 13] }),
             frameRate: 5,
             yoyo: false,
             repeat: 0
@@ -349,7 +343,7 @@ class gameState extends Phaser.Scene {
         });
         this.anims.create({
             key: 'lindasattackweapon',
-            frames: this.anims.generateFrameNumbers('lindas', { frames: [5,6,7,7] }),
+            frames: this.anims.generateFrameNumbers('lindas', { frames: [5, 6, 7, 7] }),
             frameRate: 5,
             repeat: 0
         });

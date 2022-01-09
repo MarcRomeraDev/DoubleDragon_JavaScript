@@ -13,6 +13,8 @@ class level2 extends Phaser.Scene {
         this.ePunchSound = this.sound.add('punch', { volume: .3 });
         this.kickSound = this.sound.add('kick', { volume: .3 });
         this.music = this.sound.add('bgMusic', { volume: .1, loop: true });
+
+        this.levelUpSound = this.sound.add('levelUp', { volume: .3 });
         this.gameOverMusic = this.sound.add('gameOver', { volume: .1, loop: false });
         this.victoryMusic = this.sound.add('victoryMusic', { volume: .1, loop: false });
         this.music.play();
@@ -45,15 +47,14 @@ class level2 extends Phaser.Scene {
             q: Phaser.Input.Keyboard.KeyCodes.Q
         });
 
-        this.isPlayerInAFight = false;
-
+        
         //STORES THE SPRITES OF THE PLAYER'S HEALTH
         this.health = [];
         for (var i = 0; i < 14; i++) {
             this.health[i] = this.add.sprite(40 + 4 * i, config.height - 25, 'health').setOrigin(0).setDisplaySize(3, 7);
         }
         this.player.health = this.health.length;
-
+        
         //STORES THE SPRITES OF THE PLAYER'S HEARTS (levels)
         this.hearts = [];
         for (var i = 0; i < 3; i++) {
@@ -62,11 +63,11 @@ class level2 extends Phaser.Scene {
                 this.hearts[i].visible = false;
             }
         }
-
-        this.createBackgroundAnim();
-        //this.physics.add.overlap(this.player.attackHitbox, this.waveSystem.enemies, this.waveSystem.dmgEnemy, null, this.waveSystem);
-        this.waveSystem = new waveSystemManager(this,2);
+        
+        this.isPlayerInAFight = false;
         this.playerVulnerable = true;
+        this.createBackgroundAnim();
+        this.waveSystem = new waveSystemManager(this, 2);
         this.weapon;
         this.hasWeapon = false;
         this.physics.add.overlap(this.player.attackHitbox, this.waveSystem.enemies, this.waveSystem.dmgEnemy, null, this.waveSystem);
@@ -86,14 +87,6 @@ class level2 extends Phaser.Scene {
         this.updateLevel();
         this.updateConveyorBelt();
 
-        //INPUT TO TEST RECIEVE DAMAGE
-        if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.h)) {
-            this.health[this.player.health - 1].visible = false;
-            this.player.health--;
-            this.checkPlayerHealth();
-            this.victoryEvent();
-        }
-
         //INPUT TO TEST HEALING
         if (Phaser.Input.Keyboard.JustDown(this.keyboardKeys.q)) {
             if (this.player.health < 14) {
@@ -105,8 +98,8 @@ class level2 extends Phaser.Scene {
     dmgPlayer(hit) {
         if (this.player.canMove) {
             //PREVENTS FROM PLAYER'S ATTACK HITBOX GENERATING AFTER GETTING HIT GLITCH
-            if (this.player.headbuttAnimation != null) this.player.headbuttAnimation.off('animationupdate'); //STOPS LISTENER IF ANIMATION IS IN FRAME 3
-            if (this.player.kickAnimation != null) this.player.kickAnimation.off('animationupdate'); //STOPS LISTENER IF ANIMATION IS IN FRAME 3
+            if (this.player.headbuttAnimation != null) this.player.headbuttAnimation.off('animationupdate');
+            if (this.player.kickAnimation != null) this.player.kickAnimation.off('animationupdate');
 
             this.player.canMove = false;
 
@@ -191,10 +184,10 @@ class level2 extends Phaser.Scene {
 
     updateConveyorBelt() {
         if (this.player.body.y < config.height / 2 + 5 && this.player.body.y > config.height / 2 - 12 && this.player.body.x < config.width - 75) {
-            if(this.player.body.velocity.x + 30 > gamePrefs.playerSpeed+30)
-            this.player.body.velocity.x =  gamePrefs.playerSpeed+30;
+            if (this.player.body.velocity.x + 30 > gamePrefs.playerSpeed + 30)
+                this.player.body.velocity.x = gamePrefs.playerSpeed + 30;
             else
-            this.player.body.velocity.x += 30;
+                this.player.body.velocity.x += 30;
         }
         if (this.player.body.x > config.width - 75 && this.player.body.y > config.height / 2 - 12 && !this.player.isDead) {
             this.makePlayerFall();
@@ -239,9 +232,6 @@ class level2 extends Phaser.Scene {
         this.player.isAttacking = false;
         this.deathTimer = this.time.delayedCall(2000, function () { this.player.health = 0; this.checkPlayerHealth(); }, [], this);
     }
-
-    // makeEnemiesFall() {
-    // }
 
     //CHECK IF PLAYER DIES
     checkPlayerHealth() {

@@ -1,8 +1,6 @@
 class enemyPrefab extends Phaser.GameObjects.Sprite {
     constructor(_scene, _posX, _posY, _tag, _dmg, _health) {
         super(_scene, _posX, _posY, _tag);
-        // _scene.add.existing(this);
-
         this.eType = _tag;
         this.scene = _scene;
         this.maxHealth = _health;
@@ -15,7 +13,6 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
         this.enemyHitbox = this.scene.add.rectangle(config.width / 2 + 20, config.height * .68, 15, 10, 0xffffff, 0);
         this.scene.physics.add.existing(this.enemyHitbox);
         this.scene.physics.add.overlap(this.enemyHitbox, this.scene.player, this.scene.dmgPlayer, null, this.scene);
-
         this.enemyHitbox.body.enable = false;
     }
 
@@ -30,7 +27,7 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
         this.isAttacking = false;
         this.switchLanes = false;
         //Combat
-        this.maxKnockDownCounter = 3; 
+        this.maxKnockDownCounter = 3;
         this.knockDownCounter = 3;
         this.health = this.maxHealth;
         this.flipFlop = false;
@@ -44,9 +41,6 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
             _enemy.flipHitBox(); // sets hitbox correctly
             this.direction *= -1;
         }
-
-
-
         super.preUpdate(time, delta);
     }
     giveWeapon() {
@@ -187,7 +181,7 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
         this.eMoveState = _newState;
     }
     move(_enemy, _hero) {
-        if (this.eMoveState != "KNOCKED_DOWN" && this.eMoveState != "DEAD" && this.isVulnerable && !this.isAttacking) {
+        if (this.eMoveState != "KNOCKED_DOWN" && this.eMoveState != "DEAD" && this.isVulnerable && !this.isAttacking && !_hero.isDead) {
 
             var distanceX = Phaser.Math.Distance.Between(_enemy.body.x, 0, _hero.body.x, 0);
             var distanceY = Phaser.Math.Distance.Between(0, _enemy.body.y + _enemy.body.height, 0, _hero.body.y + _hero.body.height);
@@ -328,7 +322,6 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
                                 else
                                     _enemy.anims.play(this.eType + 'runweapon', false);
 
-                                //this.resetEnemyFrameToIddle(_enemy);
                             }
                         }
                         else if (distanceX > gamePrefs.forceApproachDistance) {
@@ -374,10 +367,10 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
         if (this.eMoveState != "DEAD") {
             if (this.scene.waveSystem.stage == 2) {
                 if (_enemy.body.y < config.height / 2 + 5 && _enemy.body.y > config.height / 2 - 12 && _enemy.body.x < config.width - 75) {
-                    if(_enemy.body.velocity.x + 30 > gamePrefs.enemySpeed+30)
-                    _enemy.body.velocity.x =  gamePrefs.enemySpeed+30;
+                    if (_enemy.body.velocity.x + 30 > gamePrefs.enemySpeed + 30)
+                        _enemy.body.velocity.x = gamePrefs.enemySpeed + 30;
                     else
-                    _enemy.body.velocity.x += 30;
+                        _enemy.body.velocity.x += 30;
                 }
                 if (_enemy.body.x > config.width - 75 && _enemy.body.y > config.height / 2 - 12 && this.eMoveState != "DEAD") {
                     this.makeFall(_enemy);
@@ -413,7 +406,6 @@ class enemyPrefab extends Phaser.GameObjects.Sprite {
 
     getUp(_enemy) {
         this.body.velocity.x = 0;
-        //_enemy.anims.play(this.eType + 'die', false);
         if (this.eMoveState == "KNOCKED_DOWN")
             this.getUpTimer = this.scene.time.delayedCall(500, this.resetEnemyFrameToGetUp, [_enemy], this);
     }

@@ -72,6 +72,11 @@ class character extends Phaser.GameObjects.Sprite {
     this.lifes--;
     this.health = 14;
     this.canMove = true;
+    this.scene.isPlayerInAFight = false;
+    this.scene.playerVulnerable = true;
+    this.body.velocity.x = 0;
+    this.body.velocity.y = 0;
+    this.isInFloor = false;
     this.body.collideWorldBounds = true;
     this.body.gravity.y = 0;
     this.isDead = false;
@@ -169,7 +174,7 @@ class character extends Phaser.GameObjects.Sprite {
   //#region  MOVE
   movementManager() {
     if (!this.isInFloor) this.body.setVelocity(0);
-    
+
     if (!this.isAttacking && this.canMove) {
       if (this.cursorKeys.down.isDown) { // down
         if (this.body.y < this.scene.minY) {

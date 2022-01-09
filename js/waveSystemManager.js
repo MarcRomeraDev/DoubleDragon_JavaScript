@@ -1,12 +1,12 @@
 class waveSystemManager extends Phaser.GameObjects.Sprite {
-    constructor(_scene,_stage) {
+    constructor(_scene, _stage) {
         super(_scene, 0, 0, '_tag');
         this.scene = _scene;
         this.counter = 0;
         this.stage = _stage;
         this.state = "ACTIVE"; //States: ACTIVE, WAITING,
         this.moveSceneCounter = 0;
-        
+
         this.loadPools();
 
         this.checkEvent();
@@ -23,14 +23,14 @@ class waveSystemManager extends Phaser.GameObjects.Sprite {
         _enemy.hit(_hitbox.type);
     }
     giveWeapon(_hitbox, _enemy) {
-        if(_enemy.seekingWeapon == true && Phaser.Math.Distance.Between(0, _enemy.body.y+_enemy.height, 0,_hitbox.body.y+_hitbox.height) <= 3)
-        {
-        _enemy.giveWeapon();
-        this.scene.hasWeapon = false;
-        this.scene.weapon.line.body.enable = false;
-  
-        this.scene.weapon.destroy();
-        }
+        if (this.scene.hasWeapon)
+            if (_enemy.seekingWeapon == true && Phaser.Math.Distance.Between(0, _enemy.body.y + _enemy.height, 0, _hitbox.body.y + _hitbox.height) <= 3) {
+                _enemy.giveWeapon();
+                this.scene.hasWeapon = false;
+                this.scene.weapon.line.body.enable = false;
+
+                this.scene.weapon.destroy();
+            }
 
 
     }
@@ -39,54 +39,50 @@ class waveSystemManager extends Phaser.GameObjects.Sprite {
         if (this.state == "ACTIVE") {
             switch (this.counter) {
                 case 0:
-                    if(this.stage == 1)
-                    {
+                    if (this.stage == 1) {
                         //Spawn 2 williams at start
                         this.createEnemy((config.width * 2 / 3) + 20, (config.height * 2 / 3) + 20, 'williams');
                         this.createEnemy(config.width * 8 / 10, (config.height * 2 / 3) - 20, 'williams');
                     }
-                    else{
+                    else {
                         this.createEnemy((config.width / 5), (config.height * 2 / 3) + 20, 'lopars');
                         this.createEnemy(config.width * 2 / 10, (config.height * 2 / 3) - 20, 'lopars');
                     }
 
                     break;
                 case 1:
-                    if(this.stage == 1)
-                    {
+                    if (this.stage == 1) {
                         //Spawn 1 william appears
-                         this.createEnemy(config.width + 50, config.height / 2, 'williams');
+                        this.createEnemy(config.width + 50, config.height / 2, 'williams');
                     }
-                    
+
                     break;
                 case 2:
-                        if(this.stage != 1)
-                        {
-                            this.createEnemy((config.width /2 )+30, (config.height / 2)-50, 'abobos');
-                            console.log("ABOBOS APPEAR");
-                        }
-                        break;
+                    if (this.stage != 1) {
+                        this.createEnemy((config.width / 2) + 30, (config.height / 2) - 50, 'abobos');
+                        console.log("ABOBOS APPEAR");
+                    }
+                    break;
                 case 3:
-                    if(this.stage == 1)
-                    {
+                    if (this.stage == 1) {
                         //Move Screen
                         this.scene.advanceInScene();
                     }
-                    else{
+                    else {
                         //WIN
                         this.scene.victoryEvent();
                     }
                     break;
                 case 4:
                     // Two lindas appear when the character passes the door
-                    this.createEnemy((config.width * 2 / 3)-10, (config.height / 2)+10, 'lindas', true);
-                    this.createEnemy((config.width * 2 / 3)+10, (config.height / 2)+10, 'lindas');
+                    this.createEnemy((config.width * 2 / 3) - 10, (config.height / 2) + 10, 'lindas', true);
+                    this.createEnemy((config.width * 2 / 3) + 10, (config.height / 2) + 10, 'lindas');
                     break;
                 case 6:
                     //while advancing, 2 lopars will appear, one with nothing and one with a barrel
                     this.scene.advanceInScene();
-                    this.createEnemy((config.width + 50), (config.height*2 / 3), 'lopars');
-                    this.createEnemy((config.width + 100), (config.height *3/ 4), 'lopars', true); // The third one will be called directly by the scene when the player arrives to the end
+                    this.createEnemy((config.width + 50), (config.height * 2 / 3), 'lopars');
+                    this.createEnemy((config.width + 100), (config.height * 3 / 4), 'lopars', true); // The third one will be called directly by the scene when the player arrives to the end
                     // of the parking lot
                     break;
                 case 9: // advacing to the end of the level
@@ -103,7 +99,7 @@ class waveSystemManager extends Phaser.GameObjects.Sprite {
                     break;
                 case 15:
                     this.scene.physics.add.existing(this.scene.doorTrigger); //--> TRIGGER TO CHANGE SCENE ON OVERLAP
-                break;
+                    break;
                 default:
                     break;
             }
@@ -128,15 +124,14 @@ class waveSystemManager extends Phaser.GameObjects.Sprite {
     loadPools() {
         this.enemies = this.scene.physics.add.group();
     }
-    moveAllEnemiesWhenWalking()
-    {
+    moveAllEnemiesWhenWalking() {
         this.enemies.getChildren().forEach(
-            function(enemy) {
-            enemy.isScenearyMoving = true;
-        });
+            function (enemy) {
+                enemy.isScenearyMoving = true;
+            });
     }
 
-    createEnemy(_posX, _posY, _type,_startWithWeapon = false) {
+    createEnemy(_posX, _posY, _type, _startWithWeapon = false) {
         var _enemy = this.enemies.getFirst(false);  //Buscamos en el pool de enemigos si hay alguna reutilizable
         if (!_enemy) {//No hay
             console.log('Create Enemy');
@@ -151,11 +146,10 @@ class waveSystemManager extends Phaser.GameObjects.Sprite {
                 case 'lopars':
                     _enemy = new enemyLopars(this.scene, _posX, _posY, _type, this.scene.player, 3, 9);
                     break;
-                    case 'abobos':
-                        _enemy = new enemyAbobos(this.scene, _posX, _posY, _type, this.scene.player, 3, 20);
-                        break;
+                case 'abobos':
+                    _enemy = new enemyAbobos(this.scene, _posX, _posY, _type, this.scene.player, 3, 20);
+                    break;
                 default:
-                    // _enemy = new enemyWilliams(this, config.width / 3, 304, _type, this.player, 3, 10);
                     console.log('Enemy tag invalid');
                     break;
             }
@@ -175,44 +169,26 @@ class waveSystemManager extends Phaser.GameObjects.Sprite {
                     case 'lopars':
                         _enemy = new enemyLopars(this.scene, _posX, _posY, _type, this.scene.player, 3, 9);
                         break;
-                        case 'abobos':
-                            _enemy = new enemyAbobos(this.scene, _posX, _posY, _type, this.scene.player, 3, 20);
-                            break;
+                    case 'abobos':
+                        _enemy = new enemyAbobos(this.scene, _posX, _posY, _type, this.scene.player, 3, 20);
+                        break;
                     default:
-                        // _enemy = new enemyWilliams(this, config.width / 3, 304, _type, this.player, 3, 10);
                         console.log('Enemy tag invalid');
                         break;
                 }
                 this.enemies.add(_enemy);
             }
-          
+
             _enemy.active = true;
             _enemy.body.reset(_posX, _posY);
             _enemy.resetEnemy();
         }
         console.log(_startWithWeapon);
-        if(_startWithWeapon)
-        {
+        if (_startWithWeapon) {
             _enemy.giveWeapon();
         }
 
     }
-    /*instantiateEnemy(_enemy, _type, _posX, _posY) {
-        switch (_type) {
-            case 'williams':
-                _enemy = new enemyWilliams(this.scene, _posX, _posY, _type, this.scene.player, 3, 10);
-                break;
-            case 'lindas':
-                _enemy = new enemyWilliams(this.scene, _posX, _posY, 'williams', this.scene.player, 3, 1);
-                break;
-            case 'lopars':
-                _enemy = new enemyWilliams(this.scene, _posX, _posY, 'williams', this.scene.player, 3, 100);
-                break;
-            default:
-                // _enemy = new enemyWilliams(this, config.width / 3, 304, _type, this.player, 3, 10);
-                console.log('Enemy tag invalid');
-                break;
-        }
-    }*/
+
 
 }
